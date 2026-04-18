@@ -37,7 +37,7 @@ export function saveInventory(items) {
 
 export function getSettings() {
   return loadJson(KEYS.settings, {
-    mockMode: true,
+    mockMode: false,
     openrouterKey: "",
     emailjsPublicKey: "",
     emailjsServiceId: "",
