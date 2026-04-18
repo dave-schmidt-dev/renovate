@@ -67,9 +67,12 @@
     <!-- Side Navigation (desktop only) -->
     <nav class="hidden md:flex fixed left-0 top-0 h-full w-64 bg-surface-container-low flex-col z-40 border-r border-outline-variant">
       <!-- Brand -->
-      <div class="px-6 py-5 border-b border-outline-variant">
-        <p class="font-headline font-bold text-lg text-primary leading-tight">Parsly</p>
-        <p class="font-label text-xs text-on-surface-variant mt-0.5">Waste less, want less</p>
+      <div class="px-5 py-4 border-b border-outline-variant flex items-center gap-3">
+        <img src="./logo.png" alt="Parsly" class="w-9 h-9 rounded-xl" />
+        <div>
+          <p class="font-headline font-bold text-lg text-primary leading-tight">Parsly</p>
+          <p class="font-label text-xs text-on-surface-variant">Waste less, want less</p>
+        </div>
       </div>
 
       <!-- Nav Links -->
@@ -127,7 +130,10 @@
 
     <!-- Mobile Top Bar -->
     <header class="md:hidden sticky top-0 z-40 bg-surface-container-low border-b border-outline-variant px-4 py-3 flex items-center justify-between">
-      <p class="font-headline font-bold text-base text-primary">Parsly</p>
+      <div class="flex items-center gap-2">
+        <img src="./logo.png" alt="Parsly" class="w-7 h-7 rounded-lg" />
+        <p class="font-headline font-bold text-base text-primary">Parsly</p>
+      </div>
       <div class="flex items-center gap-3">
         <label class="toggle-switch">
           <input type="checkbox" checked onchange="document.getElementById('mockModeToggle').checked = this.checked" />
