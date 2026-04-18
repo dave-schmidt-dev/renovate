@@ -30,7 +30,6 @@ const els = {
   receiptFile: document.getElementById("receiptFile"),
   receiptText: document.getElementById("receiptText"),
   scanReceiptBtn: document.getElementById("scanReceiptBtn"),
-  loadScenarioBtn: document.getElementById("loadScenarioBtn"),
   receiptStatus: document.getElementById("receiptStatus"),
   aliasReviewArea: document.getElementById("aliasReviewArea"),
   confirmImportBtn: document.getElementById("confirmImportBtn"),
@@ -126,11 +125,6 @@ function bindEvents() {
     }
   });
 
-  els.loadScenarioBtn.addEventListener("click", () => {
-    const sample = DEMO_RECEIPTS[Math.floor(Math.random() * DEMO_RECEIPTS.length)];
-    els.receiptText.value = sample;
-    setStatus("Loaded a demo receipt scenario.");
-  });
 
   els.scanReceiptBtn.addEventListener("click", async () => {
     const imageFile = els.receiptFile.files?.[0];
