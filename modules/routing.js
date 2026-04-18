@@ -32,6 +32,11 @@ export function summarizeRoutes(decisions) {
 let donateIdx = 0;
 let compostIdx = 0;
 
+export function resetRouteSuggestionCounters() {
+  donateIdx = 0;
+  compostIdx = 0;
+}
+
 export function attachRouteSuggestions(route) {
   if (route === "donate") {
     const loc = DONATION_LOCATIONS[donateIdx % DONATION_LOCATIONS.length];

@@ -184,13 +184,12 @@ export function guessExpiry(name) {
   for (const { pattern, days } of CATEGORY_KEYWORDS) {
     if (pattern.test(n)) return days;
   }
-  // 4. USDA FoodKeeper database (1217 keywords, 587 items)
+  // 4. USDA FoodKeeper database — try full name first, then individual words
+  if (USDA_SHELF_LIFE[n] !== undefined) return USDA_SHELF_LIFE[n];
   const words = n.split(/[\s,\-\/]+/);
   for (const word of words) {
-    if (word.length > 2 && USDA_SHELF_LIFE[word] !== undefined) return USDA_SHELF_LIFE[word];
+    if (word.length > 3 && USDA_SHELF_LIFE[word] !== undefined) return USDA_SHELF_LIFE[word];
   }
-  // Also try multi-word matches
-  if (USDA_SHELF_LIFE[n] !== undefined) return USDA_SHELF_LIFE[n];
   // 5. Conservative default
   return 14;
 }

@@ -2,7 +2,7 @@ import { fileToBase64, generatePlanWithFallback, ocrReceipt } from "./modules/ai
 import { DEMO_RECEIPTS } from "./modules/demoData.js";
 import { buildShoppingSuggestions, summarizeRisk } from "./modules/planner.js";
 import { daysLeft, enrichWithAlias, guessExpiry, parseReceiptText, toInventoryItems } from "./modules/receipt.js";
-import { attachRouteSuggestions, normalizeRouteDecisions, summarizeRoutes } from "./modules/routing.js";
+import { attachRouteSuggestions, normalizeRouteDecisions, resetRouteSuggestionCounters, summarizeRoutes } from "./modules/routing.js";
 import {
   getAliasMap,
   getInventory,
@@ -60,10 +60,20 @@ const els = {
 
 init();
 
+function syncMockToggles(source) {
+  const desktop = els.mockModeToggle;
+  const mobile = document.getElementById("mockModeToggleMobile");
+  const val = source.checked;
+  if (desktop && desktop !== source) desktop.checked = val;
+  if (mobile && mobile !== source) mobile.checked = val;
+}
+
 function init() {
   els.mockModeToggle.checked = state.settings.mockMode;
   const mobileMock = document.getElementById("mockModeToggleMobile");
   if (mobileMock) mobileMock.checked = state.settings.mockMode;
+  els.mockModeToggle.addEventListener("change", () => syncMockToggles(els.mockModeToggle));
+  if (mobileMock) mobileMock.addEventListener("change", () => syncMockToggles(mobileMock));
   els.openrouterKey.value = state.settings.openrouterKey || "";
   els.emailjsPublicKey.value = state.settings.emailjsPublicKey || "";
   els.emailjsServiceId.value = state.settings.emailjsServiceId || "";
@@ -649,6 +659,7 @@ function renderShopping(items) {
 function renderRouting(decisions, summary) {
   clearElement(els.routingSummary);
   clearElement(els.routingList);
+  resetRouteSuggestionCounters();
 
   const routeConfig = {
     eat: { icon: "restaurant", badgeClass: "bg-secondary-container text-on-secondary-container" },
@@ -827,7 +838,10 @@ function setStatCard(cardEl, value) {
 }
 
 function renderFailureBadge(count) {
-  els.failureCountBadge.textContent = `${count} Failures`;
+  const text = `${count} Failures`;
+  els.failureCountBadge.textContent = text;
+  const mobile = document.getElementById("failureCountBadgeMobile");
+  if (mobile) mobile.textContent = text;
 }
 
 function getApiKey() {

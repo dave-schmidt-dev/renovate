@@ -90,7 +90,7 @@
         </a>
         <a href="#section-alias" data-section="section-alias" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors">
           <span class="material-symbols-outlined text-[20px]">school</span>
-          Alias Review
+          Teach Parsly
         </a>
         <a href="#section-inventory" data-section="section-inventory" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors">
           <span class="material-symbols-outlined text-[20px]">inventory_2</span>
@@ -102,7 +102,7 @@
         </a>
         <a href="#section-routing" data-section="section-routing" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors">
           <span class="material-symbols-outlined text-[20px]">directions_run</span>
-          Routing
+          What To Do
         </a>
       </div>
 
@@ -112,7 +112,7 @@
         <div class="flex items-center justify-between px-1">
           <span class="font-label text-sm text-on-surface-variant">Mock Mode</span>
           <label class="toggle-switch">
-            <input id="mockModeToggle" type="checkbox" checked />
+            <input id="mockModeToggle" type="checkbox" />
             <span class="slider"></span>
           </label>
         </div>
@@ -139,10 +139,10 @@
       </div>
       <div class="flex items-center gap-3">
         <label class="toggle-switch">
-          <input id="mockModeToggleMobile" type="checkbox" onchange="document.getElementById('mockModeToggle').checked = this.checked" />
+          <input id="mockModeToggleMobile" type="checkbox" />
           <span class="slider"></span>
         </label>
-        <span class="bg-error-container text-on-error-container font-label text-xs font-medium px-2.5 py-0.5 rounded-full">0 Failures</span>
+        <span id="failureCountBadgeMobile" class="bg-error-container text-on-error-container font-label text-xs font-medium px-2.5 py-0.5 rounded-full">0 Failures</span>
       </div>
     </header>
 
@@ -242,7 +242,7 @@
         <label class="block border-2 border-dashed border-outline-variant rounded-3xl p-10 text-center cursor-pointer hover:bg-surface-container-low transition-colors mb-4">
           <span class="material-symbols-outlined text-[40px] text-on-surface-variant block mb-2">cloud_upload</span>
           <p class="font-body text-sm text-on-surface-variant">Upload Receipt Photo</p>
-          <p class="font-label text-xs text-outline mt-1">JPG, PNG, or PDF</p>
+          <p class="font-label text-xs text-outline mt-1">JPG or PNG</p>
           <input id="receiptFile" type="file" accept="image/*" class="hidden" />
         </label>
         <!-- Image preview (hidden until file selected) -->
@@ -290,7 +290,7 @@
       <section id="section-inventory" class="mb-12">
         <div class="flex items-center gap-3 mb-1">
           <span class="material-symbols-outlined text-[22px] text-primary">inventory_2</span>
-          <h2 class="font-headline font-extrabold text-2xl tracking-tight">Pantry Pulse</h2>
+          <h2 class="font-headline font-extrabold text-2xl tracking-tight">Inventory</h2>
         </div>
         <p class="font-body text-sm text-on-surface-variant mb-4">Manage ingredients before they expire</p>
 
@@ -336,7 +336,7 @@
       <section id="section-routing" class="mb-12">
         <div class="flex items-center gap-3 mb-1">
           <span class="material-symbols-outlined text-[22px] text-primary">directions_run</span>
-          <h2 class="font-headline font-extrabold text-2xl tracking-tight">Food Routing</h2>
+          <h2 class="font-headline font-extrabold text-2xl tracking-tight">What To Do</h2>
         </div>
         <p class="font-body text-sm text-on-surface-variant mb-5">Directing surplus for maximum impact</p>
 
