@@ -230,7 +230,8 @@ function renderAliasCards() {
     expiresInput.type = "number";
     expiresInput.min = "1";
     expiresInput.max = "60";
-    expiresInput.value = "5";
+    expiresInput.value = "";
+    expiresInput.placeholder = "auto";
     expiresInput.className = "w-20 bg-surface-container-high border-none rounded-xl px-3 py-2 font-body text-sm";
 
     const confidenceBadge = document.createElement("span");
@@ -278,7 +279,7 @@ function collectAliasRows() {
     return {
       ...row,
       canonicalFoodName: canonicalInput?.value?.trim() || row.canonicalFoodName,
-      expiresInDays: parseInt(expiresInput?.value, 10) || 5,
+      expiresInDays: parseInt(expiresInput?.value, 10) || 0,
       remember: Boolean(rememberInput?.checked),
     };
   });
