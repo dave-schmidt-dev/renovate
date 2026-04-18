@@ -12,7 +12,13 @@ export function buildShoppingSuggestions(recipes) {
 }
 
 export function summarizeRisk(inventory) {
-  const highRisk = inventory.filter((item) => item.expiresInDays <= 3).length;
+  const highRisk = inventory.filter((item) => {
+    if (item.expiresAt) {
+      const ms = new Date(item.expiresAt).getTime() - Date.now();
+      return Math.ceil(ms / 86400000) <= 3;
+    }
+    return (item.expiresInDays ?? item.shelfLifeDays ?? 14) <= 3;
+  }).length;
   return {
     total: inventory.length,
     highRisk,
