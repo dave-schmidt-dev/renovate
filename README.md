@@ -11,6 +11,7 @@ Receipt-to-recipe sustainability assistant for the NVCC Renovate hackathon.
 - Tracks real expiration dates using USDA FoodKeeper database (587 items, 1217 keywords)
 - Generates recipes that prioritize foods closest to spoilage
 - Routes items: eat (use in recipes) -> donate (local Manassas food pantries) -> compost -> failure
+- Mark items as eaten, donated, or composted — removes from inventory and updates all views
 - Sends shopping lists via email (EmailJS integration)
 - Tracks sustainability metrics: items at risk, items rescued, failure count
 
@@ -39,7 +40,7 @@ Falls back to local heuristic when no API key is set. Mock mode available via to
 index.html              — Single-page app with M3 design system
 styles.css              — CSS custom properties + Tailwind CDN fallback
 app.js                  — Main controller, DOM rendering, event wiring
-logo.png                — Parsly logo
+logo_nobg.png           — Parsly logo (transparent background)
 modules/
   storage.js            — localStorage persistence (aliases, inventory, settings)
   demoData.js           — Demo receipt scenarios + Manassas donation/compost locations
@@ -65,6 +66,8 @@ Material Design 3 color system from Google Stitch templates:
 - Manrope (headlines) + Inter (body) fonts, Material Symbols icons
 - Sticky side navigation with scroll-tracking highlights
 - Risk color coding: red (<=3 days), amber (4-7 days), green (>7 days)
+- Badge colors: green = in inventory, blue = to purchase, gray = optional
+- Collapsible groups with "show more" for large inventories
 - Confidence labels: Known Alias, AI Matched, Best Guess, Needs Review
 - CSS custom property fallback for offline use
 

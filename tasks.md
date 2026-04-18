@@ -29,6 +29,13 @@
 - [x] Initial Cursor app implementation
 - [x] Google Stitch UI template generation
 
+- [x] Mark Eaten / Donated / Composted action buttons on routing cards
+- [x] Collapsible grouped inventory (by risk level) + routing (by route)
+- [x] Show more/fewer toggle for large lists (>5 items per group)
+- [x] Blue badges for to-purchase items on shopping list + recipe cards
+- [x] Switch to transparent logo (logo_nobg.png)
+- [x] Add Ali (@Valiyev-Ali) and Steve (@steveonw) as GitHub collaborators
+
 ## Backlog
 
 - [ ] Add Tesseract.js OCR for fully offline image scanning

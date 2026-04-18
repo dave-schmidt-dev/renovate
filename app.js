@@ -17,6 +17,10 @@ const state = {
   inventory: getInventory(),
   settings: getSettings(),
   recipesGenerated: 0,
+  lastDecisions: [],
+  lastSummary: {},
+  lastRecipes: [],
+  lastShopping: [],
 };
 
 const els = {
@@ -203,6 +207,10 @@ function bindEvents() {
       const summary = summarizeRoutes(decisions);
 
       state.recipesGenerated += recipes.length;
+      state.lastDecisions = decisions;
+      state.lastSummary = summary;
+      state.lastRecipes = recipes;
+      state.lastShopping = shopping;
       renderRecipes(recipes, result.provider);
       renderShopping(shopping);
       renderRouting(decisions, summary);
@@ -426,6 +434,8 @@ function collectAliasRows() {
   });
 }
 
+const COLLAPSE_LIMIT = 5;
+
 function renderInventory() {
   clearElement(els.inventoryMeta);
   clearElement(els.inventoryList);
@@ -450,65 +460,115 @@ function renderInventory() {
 
   updateDashboard(null, null);
 
+  // Group items by risk level, sorted by days ascending within each group
+  const groups = { high: [], medium: [], low: [] };
   state.inventory.forEach((item) => {
     const days = daysLeft(item);
-    let riskBarClass, expiryBadgeClass;
-    if (days <= 3) {
-      riskBarClass = "risk-bar-high";
-      expiryBadgeClass = "bg-error-container text-on-error-container";
-    } else if (days <= 7) {
-      riskBarClass = "risk-bar-medium";
-      expiryBadgeClass = "bg-secondary-fixed text-on-secondary-fixed";
-    } else {
-      riskBarClass = "risk-bar-low";
-      expiryBadgeClass = "bg-surface-container text-on-surface-variant";
-    }
-
-    const card = document.createElement("div");
-    card.className = "bg-surface-container-lowest rounded-2xl p-4 flex items-center gap-4 relative overflow-hidden";
-
-    const riskBar = document.createElement("div");
-    riskBar.className = `absolute left-0 top-0 bottom-0 w-1 ${riskBarClass}`;
-
-    const iconBox = document.createElement("div");
-    iconBox.className = "w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0";
-    const iconSpan = document.createElement("span");
-    iconSpan.className = "material-symbols-outlined text-on-surface-variant";
-    iconSpan.textContent = foodIcon(item.canonicalName);
-    iconBox.appendChild(iconSpan);
-
-    const info = document.createElement("div");
-    info.className = "flex-1";
-
-    const topRow = document.createElement("div");
-    topRow.className = "flex justify-between items-start";
-    const nameEl = document.createElement("h3");
-    nameEl.className = "font-headline font-bold text-sm text-on-surface";
-    nameEl.textContent = toTitleCase(item.canonicalName);
-    const expiryBadge = document.createElement("span");
-    expiryBadge.className = `${expiryBadgeClass} px-2 py-0.5 rounded-full font-label text-[10px] font-bold uppercase`;
-    expiryBadge.textContent = `${days} Days`;
-    topRow.appendChild(nameEl);
-    topRow.appendChild(expiryBadge);
-
-    const subRow = document.createElement("div");
-    subRow.className = "flex gap-4 mt-1";
-    const qtySpan = document.createElement("span");
-    qtySpan.className = "font-body text-xs text-on-surface-variant";
-    qtySpan.textContent = `Qty: ${item.quantity}`;
-    const rawSpan = document.createElement("span");
-    rawSpan.className = "font-body text-xs text-on-surface-variant";
-    rawSpan.textContent = `Raw: ${item.rawLabel}`;
-    subRow.appendChild(qtySpan);
-    subRow.appendChild(rawSpan);
-
-    info.appendChild(topRow);
-    info.appendChild(subRow);
-    card.appendChild(riskBar);
-    card.appendChild(iconBox);
-    card.appendChild(info);
-    els.inventoryList.appendChild(card);
+    if (days <= 3) groups.high.push(item);
+    else if (days <= 7) groups.medium.push(item);
+    else groups.low.push(item);
   });
+  const groupConfig = [
+    { key: "high",   label: "Expiring Soon",  icon: "warning",     barClass: "risk-bar-high",   badgeClass: "bg-error-container text-on-error-container",          items: groups.high },
+    { key: "medium", label: "Use This Week",   icon: "schedule",    barClass: "risk-bar-medium", badgeClass: "bg-secondary-fixed text-on-secondary-fixed",          items: groups.medium },
+    { key: "low",    label: "Fresh",           icon: "check_circle", barClass: "risk-bar-low",   badgeClass: "bg-surface-container text-on-surface-variant",        items: groups.low },
+  ];
+  groupConfig.forEach((grp) => {
+    if (!grp.items.length) return;
+    grp.items.sort((a, b) => daysLeft(a) - daysLeft(b));
+    const section = document.createElement("details");
+    section.open = grp.key === "high" || state.inventory.length <= 15;
+    section.className = "mb-3";
+    const summary = document.createElement("summary");
+    summary.className = "flex items-center gap-2 cursor-pointer select-none py-2 px-1 rounded-xl hover:bg-surface-container-low transition-colors";
+    const sIcon = document.createElement("span");
+    sIcon.className = "material-symbols-outlined text-[18px] text-on-surface-variant";
+    sIcon.textContent = grp.icon;
+    const sLabel = document.createElement("span");
+    sLabel.className = "font-headline font-semibold text-sm text-on-surface";
+    sLabel.textContent = grp.label;
+    const sCount = document.createElement("span");
+    sCount.className = `${grp.badgeClass} px-2 py-0.5 rounded-full font-label text-[10px] font-bold`;
+    sCount.textContent = grp.items.length;
+    summary.appendChild(sIcon);
+    summary.appendChild(sLabel);
+    summary.appendChild(sCount);
+    section.appendChild(summary);
+
+    const list = document.createElement("div");
+    list.className = "stack space-y-2 mt-2";
+    const needsToggle = grp.items.length > COLLAPSE_LIMIT;
+    grp.items.forEach((item, idx) => {
+      const card = buildInventoryCard(item, grp.barClass, grp.badgeClass);
+      if (needsToggle && idx >= COLLAPSE_LIMIT) card.classList.add("hidden");
+      list.appendChild(card);
+    });
+    section.appendChild(list);
+
+    if (needsToggle) {
+      const toggle = document.createElement("button");
+      toggle.className = "mt-2 font-label text-xs font-medium text-primary hover:underline px-1";
+      toggle.textContent = `Show all ${grp.items.length} items`;
+      let expanded = false;
+      toggle.addEventListener("click", () => {
+        expanded = !expanded;
+        list.querySelectorAll(":scope > div").forEach((el, i) => {
+          if (i >= COLLAPSE_LIMIT) el.classList.toggle("hidden", !expanded);
+        });
+        toggle.textContent = expanded ? `Show fewer` : `Show all ${grp.items.length} items`;
+      });
+      section.appendChild(toggle);
+    }
+    els.inventoryList.appendChild(section);
+  });
+}
+
+function buildInventoryCard(item, riskBarClass, expiryBadgeClass) {
+  const days = daysLeft(item);
+  const card = document.createElement("div");
+  card.className = "bg-surface-container-lowest rounded-2xl p-4 flex items-center gap-4 relative overflow-hidden";
+
+  const riskBar = document.createElement("div");
+  riskBar.className = `absolute left-0 top-0 bottom-0 w-1 ${riskBarClass}`;
+
+  const iconBox = document.createElement("div");
+  iconBox.className = "w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0";
+  const iconSpan = document.createElement("span");
+  iconSpan.className = "material-symbols-outlined text-on-surface-variant";
+  iconSpan.textContent = foodIcon(item.canonicalName);
+  iconBox.appendChild(iconSpan);
+
+  const info = document.createElement("div");
+  info.className = "flex-1";
+
+  const topRow = document.createElement("div");
+  topRow.className = "flex justify-between items-start";
+  const nameEl = document.createElement("h3");
+  nameEl.className = "font-headline font-bold text-sm text-on-surface";
+  nameEl.textContent = toTitleCase(item.canonicalName);
+  const expiryBadge = document.createElement("span");
+  expiryBadge.className = `${expiryBadgeClass} px-2 py-0.5 rounded-full font-label text-[10px] font-bold uppercase`;
+  expiryBadge.textContent = `${days} Days`;
+  topRow.appendChild(nameEl);
+  topRow.appendChild(expiryBadge);
+
+  const subRow = document.createElement("div");
+  subRow.className = "flex gap-4 mt-1";
+  const qtySpan = document.createElement("span");
+  qtySpan.className = "font-body text-xs text-on-surface-variant";
+  qtySpan.textContent = `Qty: ${item.quantity}`;
+  const rawSpan = document.createElement("span");
+  rawSpan.className = "font-body text-xs text-on-surface-variant";
+  rawSpan.textContent = `Raw: ${item.rawLabel}`;
+  subRow.appendChild(qtySpan);
+  subRow.appendChild(rawSpan);
+
+  info.appendChild(topRow);
+  info.appendChild(subRow);
+  card.appendChild(riskBar);
+  card.appendChild(iconBox);
+  card.appendChild(info);
+  return card;
 }
 
 function renderRecipes(recipes, provider) {
@@ -536,7 +596,7 @@ function renderRecipes(recipes, provider) {
     });
     (recipe.missingItems || []).forEach((name) => {
       const b = document.createElement("span");
-      b.className = "bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full text-xs font-medium";
+      b.className = "bg-info-container text-on-info-container px-2 py-0.5 rounded-full text-xs font-medium";
       b.textContent = name;
       badges.appendChild(b);
     });
@@ -572,9 +632,9 @@ function renderShopping(items) {
     nameEl.textContent = item.name;
     const badge = document.createElement("span");
     badge.className = item.required
-      ? "bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-label text-xs font-medium"
+      ? "bg-info-container text-on-info-container px-2 py-0.5 rounded-full font-label text-xs font-medium"
       : "bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full font-label text-xs font-medium";
-    badge.textContent = item.required ? "required" : "optional";
+    badge.textContent = item.required ? "to purchase" : "optional";
     topRow.appendChild(nameEl);
     topRow.appendChild(badge);
 
@@ -621,65 +681,136 @@ function renderRouting(decisions, summary) {
     els.routingSummary.appendChild(stat);
   });
 
+  // Group decisions by route into collapsible sections
+  const routeGroups = { eat: [], donate: [], compost: [], failure: [] };
   decisions.forEach((d) => {
-    const cfg = routeConfig[d.route] || routeConfig.failure;
-    const suggest = attachRouteSuggestions(d.route);
-
-    const card = document.createElement("div");
-    card.className = "bg-surface-container-lowest rounded-2xl p-4 flex items-start gap-3";
-
-    const iconEl = document.createElement("span");
-    iconEl.className = "material-symbols-outlined text-[20px] text-on-surface-variant mt-0.5";
-    iconEl.textContent = cfg.icon;
-
-    const body = document.createElement("div");
-    body.className = "flex-1";
-
-    const topRow = document.createElement("div");
-    topRow.className = "flex items-center gap-2 mb-1";
-
-    if (d.route === "failure") {
-      const s = document.createElement("s");
-      s.className = "font-headline font-bold text-sm text-on-surface-variant";
-      s.textContent = d.item;
-      topRow.appendChild(s);
-    } else {
-      const nameEl = document.createElement("span");
-      nameEl.className = "font-headline font-bold text-sm text-on-surface";
-      nameEl.textContent = d.item;
-      topRow.appendChild(nameEl);
-    }
-
-    const routeBadge = document.createElement("span");
-    routeBadge.className = `${cfg.badgeClass} px-2 py-0.5 rounded-full font-label text-xs font-medium`;
-    routeBadge.textContent = d.route;
-    topRow.appendChild(routeBadge);
-
-    const reason = document.createElement("p");
-    reason.className = "font-body text-xs text-on-surface-variant";
-    reason.textContent = d.reason || "";
-
-    body.appendChild(topRow);
-    body.appendChild(reason);
-
-    if (suggest) {
-      const rec = document.createElement("div");
-      rec.className = "mt-2 bg-surface-container-low rounded-xl px-3 py-2 flex items-center gap-2";
-      const locIcon = document.createElement("span");
-      locIcon.className = "material-symbols-outlined text-[16px] text-primary shrink-0";
-      locIcon.textContent = d.route === "donate" ? "volunteer_activism" : "compost";
-      const locText = document.createElement("span");
-      locText.className = "font-body text-xs text-on-surface";
-      locText.textContent = suggest;
-      rec.appendChild(locIcon);
-      rec.appendChild(locText);
-      body.appendChild(rec);
-    }
-
-    card.appendChild(iconEl);
-    card.appendChild(body);
-    els.routingList.appendChild(card);
+    (routeGroups[d.route] || routeGroups.failure).push(d);
   });
+
+  const routeLabels = { eat: "Eat", donate: "Donate", compost: "Compost", failure: "Unresolved" };
+
+  ["eat", "donate", "compost", "failure"].forEach((key) => {
+    const items = routeGroups[key];
+    if (!items.length) return;
+    const cfg = routeConfig[key];
+
+    const section = document.createElement("details");
+    section.open = key === "eat" || key === "donate" || decisions.length <= 15;
+    section.className = "mb-3";
+    const sectionSummary = document.createElement("summary");
+    sectionSummary.className = "flex items-center gap-2 cursor-pointer select-none py-2 px-1 rounded-xl hover:bg-surface-container-low transition-colors";
+    const sIcon = document.createElement("span");
+    sIcon.className = "material-symbols-outlined text-[18px] text-on-surface-variant";
+    sIcon.textContent = cfg.icon;
+    const sLabel = document.createElement("span");
+    sLabel.className = "font-headline font-semibold text-sm text-on-surface";
+    sLabel.textContent = routeLabels[key];
+    const sCount = document.createElement("span");
+    sCount.className = `${cfg.badgeClass} px-2 py-0.5 rounded-full font-label text-[10px] font-bold`;
+    sCount.textContent = items.length;
+    sectionSummary.appendChild(sIcon);
+    sectionSummary.appendChild(sLabel);
+    sectionSummary.appendChild(sCount);
+    section.appendChild(sectionSummary);
+
+    const list = document.createElement("div");
+    list.className = "stack space-y-2 mt-2";
+    const needsToggle = items.length > COLLAPSE_LIMIT;
+
+    items.forEach((d, idx) => {
+      const suggest = attachRouteSuggestions(d.route);
+      const card = buildRoutingCard(d, cfg, suggest);
+      if (needsToggle && idx >= COLLAPSE_LIMIT) card.classList.add("hidden");
+      list.appendChild(card);
+    });
+    section.appendChild(list);
+
+    if (needsToggle) {
+      const toggle = document.createElement("button");
+      toggle.className = "mt-2 font-label text-xs font-medium text-primary hover:underline px-1";
+      toggle.textContent = `Show all ${items.length} items`;
+      let expanded = false;
+      toggle.addEventListener("click", () => {
+        expanded = !expanded;
+        list.querySelectorAll(":scope > div").forEach((el, i) => {
+          if (i >= COLLAPSE_LIMIT) el.classList.toggle("hidden", !expanded);
+        });
+        toggle.textContent = expanded ? "Show fewer" : `Show all ${items.length} items`;
+      });
+      section.appendChild(toggle);
+    }
+    els.routingList.appendChild(section);
+  });
+}
+
+function buildRoutingCard(d, cfg, suggest) {
+  const card = document.createElement("div");
+  card.className = "bg-surface-container-lowest rounded-2xl p-4 flex items-start gap-3";
+
+  const iconEl = document.createElement("span");
+  iconEl.className = "material-symbols-outlined text-[20px] text-on-surface-variant mt-0.5";
+  iconEl.textContent = cfg.icon;
+
+  const body = document.createElement("div");
+  body.className = "flex-1";
+
+  const topRow = document.createElement("div");
+  topRow.className = "flex items-center gap-2 mb-1";
+
+  if (d.route === "failure") {
+    const s = document.createElement("s");
+    s.className = "font-headline font-bold text-sm text-on-surface-variant";
+    s.textContent = d.item;
+    topRow.appendChild(s);
+  } else {
+    const nameEl = document.createElement("span");
+    nameEl.className = "font-headline font-bold text-sm text-on-surface";
+    nameEl.textContent = d.item;
+    topRow.appendChild(nameEl);
+  }
+
+  const reason = document.createElement("p");
+  reason.className = "font-body text-xs text-on-surface-variant";
+  reason.textContent = d.reason || "";
+
+  body.appendChild(topRow);
+  body.appendChild(reason);
+
+  if (suggest) {
+    const rec = document.createElement("div");
+    rec.className = "mt-2 bg-surface-container-low rounded-xl px-3 py-2 flex items-center gap-2";
+    const locIcon = document.createElement("span");
+    locIcon.className = "material-symbols-outlined text-[16px] text-primary shrink-0";
+    locIcon.textContent = d.route === "donate" ? "volunteer_activism" : "compost";
+    const locText = document.createElement("span");
+    locText.className = "font-body text-xs text-on-surface";
+    locText.textContent = suggest;
+    rec.appendChild(locIcon);
+    rec.appendChild(locText);
+    body.appendChild(rec);
+  }
+
+  const actionMap = {
+    eat:     { label: "Mark Eaten",     icon: "restaurant",          style: "bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed-dim" },
+    donate:  { label: "Mark Donated",   icon: "volunteer_activism",  style: "bg-primary-fixed text-primary hover:bg-primary-fixed-dim" },
+    compost: { label: "Mark Composted", icon: "compost",             style: "bg-tertiary-fixed text-on-tertiary-fixed hover:opacity-80" },
+  };
+  const act = actionMap[d.route];
+  if (act) {
+    const actionBtn = document.createElement("button");
+    actionBtn.className = "mt-2 flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg " + act.style;
+    const btnIcon = document.createElement("span");
+    btnIcon.className = "material-symbols-outlined text-[16px]";
+    btnIcon.textContent = act.icon;
+    actionBtn.appendChild(btnIcon);
+    actionBtn.appendChild(document.createTextNode(" " + act.label));
+    actionBtn.addEventListener("click", () => removeInventoryItem(d.item, d.route === "eat" ? "eaten" : d.route === "donate" ? "donated" : "composted"));
+    body.appendChild(actionBtn);
+  }
+
+  card.appendChild(iconEl);
+  card.appendChild(body);
+  return card;
 }
 
 function updateDashboard(decisions, summary) {
@@ -729,6 +860,23 @@ function showEmailStatus(msg, type) {
   if (type === "success") el.classList.add("text-primary");
   else if (type === "error") el.classList.add("text-error");
   else el.classList.add("text-on-surface-variant");
+}
+
+function removeInventoryItem(canonicalName, action) {
+  state.inventory = state.inventory.filter(
+    (i) => i.canonicalName.toLowerCase() !== canonicalName.toLowerCase()
+  );
+  saveInventory(state.inventory);
+  // Remove from routing decisions and recalculate summary
+  state.lastDecisions = state.lastDecisions.filter(
+    (d) => d.item.toLowerCase() !== canonicalName.toLowerCase()
+  );
+  state.lastSummary = summarizeRoutes(state.lastDecisions);
+  renderInventory();
+  renderRouting(state.lastDecisions, state.lastSummary);
+  renderFailureBadge(state.lastSummary.failure || 0);
+  updateDashboard(state.lastDecisions, state.lastSummary);
+  setStatus(`${toTitleCase(canonicalName)} marked as ${action}.`);
 }
 
 function clearElement(el) {
