@@ -1,82 +1,81 @@
-# Parsly
+<p align="center">
+  <img src="logo_nobg.png" alt="Parsly" width="200">
+</p>
 
-Receipt-to-recipe sustainability assistant for the NVCC Renovate hackathon.
+<h3 align="center">Stop wasting food. Start cooking smarter.</h3>
 
-**Live demo**: https://dave-schmidt-dev.github.io/renovate/
+<p align="center">
+  <a href="https://dave-schmidt-dev.github.io/renovate/">Live Demo</a>
+</p>
 
-## What It Does
+---
 
-- Scans receipt photos with AI vision (OpenRouter GPT-4o-mini) to extract grocery items
-- Learns short receipt aliases (example: `MLK 2%` -> `milk`) for future scans
-- Tracks real expiration dates using USDA FoodKeeper database (587 items, 1217 keywords)
-- Generates recipes that prioritize foods closest to spoilage
-- Routes items: eat (use in recipes) -> donate (local Manassas food pantries) -> compost -> failure
-- Mark items as eaten, donated, or composted — removes from inventory and updates all views
-- Sends shopping lists via email (EmailJS integration)
-- Tracks sustainability metrics: items at risk, items rescued, failure count
+Parsly scans your grocery receipts, tracks what's about to expire, and generates recipes that use your most perishable items first. Anything you can't eat gets routed to local food pantries or compost — nothing goes to waste.
+
+Built for the [NVCC Renovate Hackathon](https://www.nvcc.edu/renovate/) (Spring 2026).
+
+## How It Works
+
+1. **Scan** — Upload a receipt photo or paste receipt text. AI vision extracts your grocery items.
+2. **Track** — Each item gets a real expiration date from the USDA FoodKeeper database (587 foods, 1217 keywords). Parsly learns your receipt shorthand (`MLK 2%` = `milk`) for future scans.
+3. **Cook** — Generate recipes that prioritize foods closest to spoilage. Red = expiring soon, amber = use this week, green = fresh.
+4. **Route** — Items you can't cook get routed: donate to nearby food pantries, or compost. Mark items as eaten, donated, or composted to track your impact.
 
 ## Quick Start
 
-1. Open https://dave-schmidt-dev.github.io/renovate/ or serve locally:
-   ```
-   python3 -m http.server 4173
-   ```
-2. Enter your OpenRouter API key in Settings (get one at openrouter.ai)
-3. Upload a receipt photo and click **Scan Receipt**, or click **Load Demo & Go**
-4. Review detected items, adjust names/expiry if needed, click **Confirm & Import**
-5. Click **Generate Recipes** for AI-powered meal suggestions and food routing
+**Try the demo** (no setup required):
+1. Open the [live site](https://dave-schmidt-dev.github.io/renovate/)
+2. Click **Load Demo & Go** — walks through a full scenario automatically
 
-## AI Provider
+**Use with real receipts:**
+1. Get a free API key from [openrouter.ai](https://openrouter.ai)
+2. Enter it in Settings
+3. Upload a receipt photo or paste receipt text
+4. Review items, then **Confirm & Import**
+5. Click **Generate Recipes**
 
-Uses OpenRouter (GPT-4o-mini) for:
-- Receipt image OCR (vision API)
-- Recipe generation + sustainability routing
+To run locally: `python3 -m http.server 4173`
 
-Falls back to local heuristic when no API key is set. Mock mode available via toggle.
+## Tech Stack
 
-## File Structure
+- **Frontend**: Vanilla JS, Tailwind CSS (CDN), Material Design 3 color system
+- **AI**: OpenRouter (GPT-4o-mini) for receipt OCR and recipe generation
+- **Data**: USDA FoodKeeper database for shelf life, hand-tuned overrides for common items
+- **Storage**: localStorage (no backend, no accounts)
+- **Hosting**: GitHub Pages
+
+Falls back to local heuristics when no API key is set. Mock mode available for offline demos.
+
+## Project Structure
 
 ```
-index.html              — Single-page app with M3 design system
+index.html              — Single-page app (M3 design system)
 styles.css              — CSS custom properties + Tailwind CDN fallback
-app.js                  — Main controller, DOM rendering, event wiring
-logo_nobg.png           — Parsly logo (transparent background)
+app.js                  — Controller, DOM rendering, event wiring
 modules/
-  storage.js            — localStorage persistence (aliases, inventory, settings)
-  demoData.js           — Demo receipt scenarios + Manassas donation/compost locations
   receipt.js            — Receipt parsing, alias matching, expiry estimation
   ai.js                 — OpenRouter API (vision OCR + recipe generation)
-  planner.js            — Shopping suggestions + risk summary
-  routing.js            — Eat/donate/compost/failure routing logic
   foodkeeper.js         — USDA FoodKeeper database (587 items, 1217 keywords)
-stitch templates/       — Original Google Stitch UI design references
+  routing.js            — Eat / donate / compost / failure routing logic
+  planner.js            — Shopping suggestions + risk summary
+  storage.js            — localStorage persistence (aliases, inventory, settings)
+  demoData.js           — Demo receipts + Manassas donation/compost locations
 ```
 
 ## Data Sources
 
-- **USDA FoodKeeper** (FSIS via data.gov) — authoritative food shelf life data
-- **Food waste stats**: USDA, ReFED, UNEP Food Waste Index 2024
-- **Donation locations**: Real food pantries near Manassas, VA (ACTS, House of Mercy, Sacred Heart, NVFS, Bull Run UU)
-
-## Design
-
-Material Design 3 color system from Google Stitch templates:
-
-- M3 color palette (primary green `#3d653e`, error red `#ba1a1a`)
-- Manrope (headlines) + Inter (body) fonts, Material Symbols icons
-- Sticky side navigation with scroll-tracking highlights
-- Risk color coding: red (<=3 days), amber (4-7 days), green (>7 days)
-- Badge colors: green = in inventory, blue = to purchase, gray = optional
-- Collapsible groups with "show more" for large inventories
-- Confidence labels: Known Alias, AI Matched, Best Guess, Needs Review
-- CSS custom property fallback for offline use
+- **[USDA FoodKeeper](https://www.fsis.usda.gov/science-data/research-projects/food-keeper-data)** — authoritative food shelf life data (FSIS via data.gov)
+- **Food waste statistics** — USDA, ReFED, UNEP Food Waste Index 2024
+- **Donation locations** — Real food pantries near Manassas, VA (ACTS, House of Mercy, Sacred Heart, NVFS, Bull Run UU)
 
 ## Team
 
-- Ali: frontend screens and UX flow
-- Steve: AI/data pipeline and provider fallback logic
-- Dave: sustainability routing, metrics, and demo flow
+| Name | Focus |
+|------|-------|
+| **Ali** ([@Valiyev-Ali](https://github.com/Valiyev-Ali)) | Frontend screens and UX flow |
+| **Steve** ([@steveonw](https://github.com/steveonw)) | AI/data pipeline and provider fallback logic |
+| **Dave** ([@dave-schmidt-dev](https://github.com/dave-schmidt-dev)) | Sustainability routing, metrics, and demo flow |
 
 ## License
 
-MIT
+[MIT](LICENSE)

@@ -48,9 +48,5 @@
 
 ## Backlog
 
-- [ ] Add Tesseract.js OCR for fully offline image scanning
-- [ ] Weekly email trigger (scheduled shopping list reminders)
-- [ ] Improve donation location data (distance-based, hours)
-- [ ] Add session history (track multiple receipt imports over time)
+- [ ] Persistent inventory — verify imports accumulate across browser sessions before building history UI
 - [ ] Barcode scanning for product identification
-- [ ] Dark mode toggle
