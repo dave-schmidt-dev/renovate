@@ -374,21 +374,36 @@ function renderAliasCards() {
     const fieldsCol = document.createElement("div");
     fieldsCol.className = "flex-1 flex flex-col sm:flex-row gap-3 w-full";
 
+    const canonicalWrap = document.createElement("div");
+    canonicalWrap.className = "flex flex-col flex-1";
+    const canonicalLabel = document.createElement("span");
+    canonicalLabel.className = "font-label text-[10px] text-on-surface-variant mb-0.5";
+    canonicalLabel.textContent = "Food name";
     const canonicalInput = document.createElement("input");
     canonicalInput.dataset.field = "canonicalFoodName";
     canonicalInput.dataset.idx = String(idx);
     canonicalInput.value = row.canonicalFoodName;
     canonicalInput.className = "flex-1 bg-surface-container-high border-none rounded-xl px-3 py-2 font-body text-sm";
+    canonicalWrap.appendChild(canonicalLabel);
+    canonicalWrap.appendChild(canonicalInput);
 
+    const expiresWrap = document.createElement("div");
+    expiresWrap.className = "flex flex-col items-start";
+    const expiresLabel = document.createElement("span");
+    expiresLabel.className = "font-label text-[10px] text-on-surface-variant mb-0.5";
+    expiresLabel.textContent = "Days until expiry";
     const expiresInput = document.createElement("input");
     expiresInput.dataset.field = "expiresInDays";
     expiresInput.dataset.idx = String(idx);
     expiresInput.type = "number";
     expiresInput.min = "1";
-    expiresInput.max = "60";
+    expiresInput.max = "365";
     expiresInput.value = "";
     expiresInput.placeholder = "auto";
+    expiresInput.title = "Days until this item expires (leave blank for auto)";
     expiresInput.className = "w-20 bg-surface-container-high border-none rounded-xl px-3 py-2 font-body text-sm";
+    expiresWrap.appendChild(expiresLabel);
+    expiresWrap.appendChild(expiresInput);
 
     const confidenceBadge = document.createElement("span");
     confidenceBadge.className = `inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${confidenceClass}`;
@@ -416,8 +431,8 @@ function renderAliasCards() {
     rememberLabel.appendChild(toggleDiv);
     rememberLabel.appendChild(rememberText);
 
-    fieldsCol.appendChild(canonicalInput);
-    fieldsCol.appendChild(expiresInput);
+    fieldsCol.appendChild(canonicalWrap);
+    fieldsCol.appendChild(expiresWrap);
     fieldsCol.appendChild(confidenceBadge);
     fieldsCol.appendChild(rememberLabel);
 
