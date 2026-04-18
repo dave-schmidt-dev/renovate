@@ -213,19 +213,7 @@ function bindEvents() {
 
   els.clearSessionBtn.addEventListener("click", () => {
     localStorage.clear();
-    state.inventory = [];
-    state.aliasReviewRows = [];
-    state.recipesGenerated = 0;
-    clearElement(els.aliasReviewArea);
-    clearElement(els.recipesList);
-    clearElement(els.shoppingList);
-    clearElement(els.routingList);
-    clearElement(els.routingSummary);
-    renderInventory();
-    renderFailureBadge(0);
-    updateDashboard(null, null);
-    setStatus("Session cleared.");
-    scrollToSection("section-dashboard");
+    location.reload();
   });
 
   els.emailShoppingBtn.addEventListener("click", async () => {
