@@ -1,57 +1,76 @@
 # Leftover Lens
 
-Leftover Lens is a local sustainability web app for an NVCC hackathon team of 3.
+Receipt-to-recipe sustainability assistant for the NVCC Renovate hackathon.
 
 ## What It Does
 
-- Bulk-imports groceries from receipt text/file input.
-- Learns short receipt aliases (example: `MLK 2%` -> `milk`) for future scans.
-- Generates recipes that prioritize foods closest to spoilage.
-- Builds suggested shopping items for missing recipe ingredients.
-- Routes leftovers using policy: `eat -> donate -> compost -> failure`.
-- Tracks `failure` count as a primary sustainability metric.
+- Bulk-imports groceries from receipt text/file input
+- Learns short receipt aliases (example: `MLK 2%` -> `milk`) for future scans
+- Generates recipes that prioritize foods closest to spoilage
+- Builds suggested shopping items for missing recipe ingredients
+- Routes leftovers using policy: `eat -> donate -> compost -> failure`
+- Tracks `failure` count as a primary sustainability metric
 
 ## Quick Start
 
 1. From this folder, run:
-   - `python3 -m http.server 4173`
+   ```
+   python3 -m http.server 4173
+   ```
 2. Open `http://localhost:4173`
-3. Use **Load Demo Scenario** or paste receipt lines.
-4. Click **Scan Receipt**, review aliases, then **Confirm & Import**.
-5. Click **Generate Recipes**.
+3. Click **Load Demo & Go** for the full automated demo, or:
+   - Click **Load Demo Scenario** to paste receipt lines
+   - Click **Scan Receipt**, review aliases, then **Confirm & Import**
+   - Click **Generate Recipes** to see recipes, shopping list, and routing
 
-## Cheap/Free AI Provider Order
+## AI Provider Order
 
-The app is built with fallback order:
+The app has a fallback chain for recipe generation:
 
-1. Local parsing/OCR-compatible flow (Tesseract.js-ready path)
-2. Gemini Flash (primary live provider)
-3. OpenAI mini model (backup)
-4. Local heuristic fallback in Mock Mode
+1. **Gemini Flash** (primary live provider — needs API key)
+2. **OpenAI mini** (backup — needs API key)
+3. **Mock mode heuristic** (default — works fully offline)
 
-Mock Mode is on by default so the demo always works offline.
+Mock Mode is on by default so the demo always works without API keys.
 
-## MVP Boundaries (6 Hours)
+## File Structure
 
-- In scope:
-  - Receipt mass import + alias memory
-  - Recipe generation + missing-ingredient shopping suggestions
-  - Donate/compost/failure routing + summary
-- Out of scope:
-  - User accounts/auth
-  - Production backend/database
-  - Full donation API integration (stubbed recommendations included)
+```
+index.html          — Single-page app with M3 design system
+styles.css          — CSS custom properties + Tailwind CDN fallback
+app.js              — Main controller, DOM rendering, event wiring
+modules/
+  storage.js        — localStorage persistence (aliases, inventory, settings)
+  demoData.js       — Demo receipt scenarios + donation/compost locations
+  receipt.js        — Receipt parsing, alias matching, inventory creation
+  ai.js             — AI provider fallback (Gemini → OpenAI → heuristic)
+  planner.js        — Shopping suggestions + risk summary
+  routing.js        — Eat/donate/compost/failure routing logic
+stitch templates/   — Original Google Stitch UI design references
+```
 
-## Team Split
+## Design
+
+The UI combines Google Stitch's Material Design 3 templates with Cursor's working JavaScript. Key design elements:
+
+- M3 color palette (primary green `#3d653e`, error red `#ba1a1a`)
+- Manrope (headlines) + Inter (body) fonts
+- Material Symbols Outlined icons
+- Sticky side navigation with scroll-tracking highlights
+- Risk color coding: red (<=3 days), amber (4-7 days), green (>7 days)
+- CSS custom property fallback for offline use (hackathon Wi-Fi)
+
+## MVP Boundaries
+
+- In scope: receipt import + alias memory, recipe generation + shopping suggestions, donate/compost/failure routing + summary
+- Out of scope: user accounts/auth, production backend/database, full donation API integration
+
+## Team
 
 - Ali: frontend screens and UX flow
 - Steve: AI/data pipeline and provider fallback logic
 - Dave: sustainability routing, metrics, and demo flow
 
-## Demo Scenarios
+## License
 
-Pre-seeded receipt scenarios are included in `modules/demoData.js` and cover:
-
-- high-spoilage produce + dairy
-- mixed produce/protein pantry
-- reusable shelf-stable + short-life mix
+MIT
