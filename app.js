@@ -45,6 +45,8 @@ const els = {
   statMealsGenerated: document.getElementById("statMealsGenerated"),
   statItemsRescued: document.getElementById("statItemsRescued"),
   statFailureCount: document.getElementById("statFailureCount"),
+  testKeysBtn: document.getElementById("testKeysBtn"),
+  settingsStatus: document.getElementById("settingsStatus"),
 };
 
 init();
@@ -65,7 +67,45 @@ function bindEvents() {
     state.settings.geminiKey = els.geminiKey.value.trim();
     state.settings.openaiKey = els.openaiKey.value.trim();
     saveSettings(state.settings);
-    setStatus("Saved model settings.");
+    showSettingsStatus("Saved", "success");
+  });
+
+  els.testKeysBtn.addEventListener("click", async () => {
+    const geminiKey = els.geminiKey.value.trim();
+    const openaiKey = els.openaiKey.value.trim();
+    if (!geminiKey && !openaiKey) {
+      showSettingsStatus("Enter at least one API key first", "error");
+      return;
+    }
+    showSettingsStatus("Testing...", "neutral");
+    const results = [];
+    if (geminiKey) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(geminiKey)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Reply OK" }] }] }),
+          }
+        );
+        results.push(res.ok ? "Gemini OK" : `Gemini failed (${res.status})`);
+      } catch {
+        results.push("Gemini unreachable");
+      }
+    }
+    if (openaiKey) {
+      try {
+        const res = await fetch("https://api.openai.com/v1/models", {
+          headers: { Authorization: `Bearer ${openaiKey}` },
+        });
+        results.push(res.ok ? "OpenAI OK" : `OpenAI failed (${res.status})`);
+      } catch {
+        results.push("OpenAI unreachable");
+      }
+    }
+    const allOk = results.every((r) => r.endsWith("OK"));
+    showSettingsStatus(results.join(" · "), allOk ? "success" : "error");
   });
 
   els.loadScenarioBtn.addEventListener("click", () => {
@@ -556,6 +596,15 @@ function renderFailureBadge(count) {
 
 function setStatus(msg) {
   els.receiptStatus.textContent = msg;
+}
+
+function showSettingsStatus(msg, type) {
+  const el = els.settingsStatus;
+  el.textContent = msg;
+  el.className = "font-body text-sm";
+  if (type === "success") el.classList.add("text-primary");
+  else if (type === "error") el.classList.add("text-error");
+  else el.classList.add("text-on-surface-variant");
 }
 
 function clearElement(el) {
