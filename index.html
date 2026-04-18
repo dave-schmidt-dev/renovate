@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Leftover Lens</title>
+    <title>Parsly</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -68,8 +68,8 @@
     <nav class="hidden md:flex fixed left-0 top-0 h-full w-64 bg-surface-container-low flex-col z-40 border-r border-outline-variant">
       <!-- Brand -->
       <div class="px-6 py-5 border-b border-outline-variant">
-        <p class="font-headline font-bold text-lg text-primary leading-tight">Leftover Lens</p>
-        <p class="font-label text-xs text-on-surface-variant mt-0.5">Eco Guardian</p>
+        <p class="font-headline font-bold text-lg text-primary leading-tight">Parsly</p>
+        <p class="font-label text-xs text-on-surface-variant mt-0.5">Waste less, want less</p>
       </div>
 
       <!-- Nav Links -->
@@ -127,7 +127,7 @@
 
     <!-- Mobile Top Bar -->
     <header class="md:hidden sticky top-0 z-40 bg-surface-container-low border-b border-outline-variant px-4 py-3 flex items-center justify-between">
-      <p class="font-headline font-bold text-base text-primary">Leftover Lens</p>
+      <p class="font-headline font-bold text-base text-primary">Parsly</p>
       <div class="flex items-center gap-3">
         <label class="toggle-switch">
           <input type="checkbox" checked onchange="document.getElementById('mockModeToggle').checked = this.checked" />
@@ -236,6 +236,14 @@
           <p class="font-label text-xs text-outline mt-1">JPG, PNG, or PDF</p>
           <input id="receiptFile" type="file" accept="image/*" class="hidden" />
         </label>
+        <!-- Image preview (hidden until file selected) -->
+        <div id="imagePreview" class="hidden mb-4 flex items-center gap-4 bg-surface-container-lowest rounded-2xl p-3">
+          <img id="imagePreviewImg" class="h-20 w-20 object-cover rounded-xl" alt="Receipt preview" />
+          <div class="flex-1">
+            <p id="imagePreviewName" class="font-headline font-semibold text-sm text-on-surface"></p>
+            <p class="font-label text-xs text-primary mt-0.5">Ready to scan</p>
+          </div>
+        </div>
 
         <!-- Paste area -->
         <textarea id="receiptText" rows="5" placeholder="BNNS ORG 3.99&#10;MLK 2% 4.49"
@@ -260,7 +268,7 @@
       <section id="section-alias" class="mb-12">
         <div class="flex items-center gap-3 mb-1">
           <span class="material-symbols-outlined text-[22px] text-primary">school</span>
-          <h2 class="font-headline font-extrabold text-2xl tracking-tight">Teach Leftover Lens</h2>
+          <h2 class="font-headline font-extrabold text-2xl tracking-tight">Teach Parsly</h2>
         </div>
         <p class="font-body text-sm text-on-surface-variant mb-6">Help us learn short receipt names for future scans</p>
 

@@ -121,8 +121,8 @@ async function callOpenRouter(prompt, key) {
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + key,
-      "HTTP-Referer": "https://leftover-lens.app",
-      "X-Title": "Leftover Lens",
+      "HTTP-Referer": "https://parsly.app",
+      "X-Title": "Parsly",
     },
     body: JSON.stringify({
       model: "openai/gpt-4o-mini",
@@ -156,8 +156,8 @@ export async function ocrReceipt(imageBase64, mediaType, apiKey) {
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + apiKey,
-      "HTTP-Referer": "https://leftover-lens.app",
-      "X-Title": "Leftover Lens",
+      "HTTP-Referer": "https://parsly.app",
+      "X-Title": "Parsly",
     },
     body: JSON.stringify({
       model: "openai/gpt-4o-mini",

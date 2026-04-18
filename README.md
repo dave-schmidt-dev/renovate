@@ -1,4 +1,4 @@
-# Leftover Lens
+# Parsly
 
 Receipt-to-recipe sustainability assistant for the NVCC Renovate hackathon.
 

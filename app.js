@@ -105,6 +105,21 @@ function bindEvents() {
     }
   });
 
+  els.receiptFile.addEventListener("change", () => {
+    const file = els.receiptFile.files?.[0];
+    const preview = document.getElementById("imagePreview");
+    const previewImg = document.getElementById("imagePreviewImg");
+    const previewName = document.getElementById("imagePreviewName");
+    if (file && file.type.startsWith("image/")) {
+      previewImg.src = URL.createObjectURL(file);
+      previewName.textContent = file.name;
+      preview.classList.remove("hidden");
+      setStatus("Image attached. Click Scan Receipt to process.");
+    } else {
+      preview.classList.add("hidden");
+    }
+  });
+
   els.loadScenarioBtn.addEventListener("click", () => {
     const sample = DEMO_RECEIPTS[Math.floor(Math.random() * DEMO_RECEIPTS.length)];
     els.receiptText.value = sample;
@@ -115,14 +130,15 @@ function bindEvents() {
     const imageFile = els.receiptFile.files?.[0];
 
     if (imageFile && imageFile.type.startsWith("image/")) {
-      if (els.mockModeToggle.checked || !state.settings.openrouterKey) {
+      const apiKey = els.openrouterKey.value.trim() || state.settings.openrouterKey;
+      if (els.mockModeToggle.checked || !apiKey) {
         setStatus("Image OCR requires an OpenRouter API key with Mock Mode off.");
         return;
       }
       setStatus("Scanning receipt image with AI...");
       try {
         const base64 = await fileToBase64(imageFile);
-        const items = await ocrReceipt(base64, imageFile.type, state.settings.openrouterKey);
+        const items = await ocrReceipt(base64, imageFile.type, apiKey);
         state.aliasReviewRows = items.map((item) => ({
           rawLabel: item.name || "Unknown",
           canonicalFoodName: item.name || "Unknown",
@@ -170,10 +186,13 @@ function bindEvents() {
       setStatus("Import food items first before generating recipes.");
       return;
     }
-    setStatus("Generating recipes and sustainability routing...");
+    const btnText = els.generateRecipesBtn.textContent;
+    els.generateRecipesBtn.disabled = true;
+    els.generateRecipesBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> Generating...';
     try {
       const result = await generatePlanWithFallback(state.inventory, {
         ...state.settings,
+        openrouterKey: els.openrouterKey.value.trim() || state.settings.openrouterKey,
         mockMode: els.mockModeToggle.checked,
       });
       const recipes = result.recipes || [];
@@ -188,8 +207,12 @@ function bindEvents() {
       renderFailureBadge(summary.failure || 0);
       updateDashboard(decisions, summary);
       setStatus(`Generated ${recipes.length} recipes using provider: ${result.provider}`);
+      scrollToSection("section-recipes");
     } catch {
       setStatus("Recipe generation failed. Try again or switch providers.");
+    } finally {
+      els.generateRecipesBtn.disabled = false;
+      els.generateRecipesBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">auto_awesome</span> Generate Recipes';
     }
   });
 
@@ -241,14 +264,14 @@ function bindEvents() {
     if (risk.length) {
       body += "\n\nAT-RISK ITEMS (<=3 days)\n" + risk.map(i => `- ${i.canonicalName} (${i.expiresInDays}d)`).join("\n");
     }
-    body += "\n\n— Leftover Lens";
+    body += "\n\n— Parsly";
 
     showEmailStatus("Sending...", "neutral");
     try {
       emailjs.init({ publicKey: emailjsPublicKey });
       await emailjs.send(emailjsServiceId, emailjsTemplateId, {
         to_email: emailRecipient,
-        subject: "Leftover Lens - Shopping List",
+        subject: "Parsly - Shopping List",
         body: body,
       });
       showEmailStatus("Sent!", "success");

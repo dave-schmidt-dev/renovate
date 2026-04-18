@@ -1,7 +1,7 @@
 const KEYS = {
-  aliasMap: "leftoverLens.aliasMap",
-  inventory: "leftoverLens.inventory",
-  settings: "leftoverLens.settings",
+  aliasMap: "parsly.aliasMap",
+  inventory: "parsly.inventory",
+  settings: "parsly.settings",
 };
 
 function loadJson(key, fallback) {
