@@ -1,3 +1,5 @@
+import { USDA_SHELF_LIFE } from "./foodkeeper.js";
+
 const FOOD_HINTS = {
   BNNS: "bananas",
   MLK: "milk",
@@ -174,7 +176,7 @@ export function guessExpiry(name) {
   const n = String(name).trim().toLowerCase();
   // 1. Specific match
   if (DEFAULT_EXPIRY[n] !== undefined) return DEFAULT_EXPIRY[n];
-  // 2. Partial specific match (check if any DEFAULT_EXPIRY key is contained in the name)
+  // 2. Partial specific match
   for (const [food, days] of Object.entries(DEFAULT_EXPIRY)) {
     if (n.includes(food)) return days;
   }
@@ -182,7 +184,14 @@ export function guessExpiry(name) {
   for (const { pattern, days } of CATEGORY_KEYWORDS) {
     if (pattern.test(n)) return days;
   }
-  // 4. Conservative default
+  // 4. USDA FoodKeeper database (1217 keywords, 587 items)
+  const words = n.split(/[\s,\-\/]+/);
+  for (const word of words) {
+    if (word.length > 2 && USDA_SHELF_LIFE[word] !== undefined) return USDA_SHELF_LIFE[word];
+  }
+  // Also try multi-word matches
+  if (USDA_SHELF_LIFE[n] !== undefined) return USDA_SHELF_LIFE[n];
+  // 5. Conservative default
   return 14;
 }
 
