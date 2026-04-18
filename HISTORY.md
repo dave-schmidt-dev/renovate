@@ -47,3 +47,23 @@
 - **Shopping badge label** — changed "required" to "to purchase" for clarity
 - **Logo** — switched to transparent background version (`logo_nobg.png`)
 - **Collaborators** — added @Valiyev-Ali (Ali) and @steveonw (Steve) as GitHub collaborators with write access
+
+## 2026-04-18 — Contrarian Review + Demo Polish
+
+- **Contrarian review** — ran full adversarial audit, fixed 8 "obviously wrong" bugs + 3 label mismatches
+- **USDA lookup fix** — full-name match before word-split, min word length >3 to block garbage entries ("red", "low", "can", "all")
+- **Brand soda fix** — Dr Pepper, Coca Cola, Pepsi, Mountain Dew, etc. added to DEFAULT_EXPIRY (180 days) so they don't match "pepper" (5 days)
+- **Mock mode** — removed HTML `checked` attribute (visual flash), added bidirectional sync between desktop and mobile toggles
+- **Mobile failure badge** — wired up with ID so it updates alongside desktop
+- **Routing counter reset** — `attachRouteSuggestions` counters now reset on each render
+- **Upload label** — changed "JPG, PNG, or PDF" to "JPG or PNG" (accept only supports images)
+- **Nav/heading consistency** — Teach Parsly, Inventory, What To Do (matched nav labels to section headings everywhere)
+- **Removed redundant "Load Demo Scenario" button** — "Load Demo & Go" covers the use case
+- **Textarea label** — added "Or type / paste receipt lines manually" above the paste area
+- **Demo walkthrough pacing** — slowed from 300ms to 1500ms per step with scroll-to-section at each stage
+- **Demo receipts expanded** — 18 items per receipt (up from 6) for realistic weekly grocery haul
+- **Recipe urgency banner** — red callout above recipes listing items <=5 days with countdown
+- **Recipe subtitle** — "Recipes that use your most perishable items first — eat what's expiring, waste less"
+- **Teach Parsly input labels** — "Food name" and "Days until expiry" above each field, max bumped to 365
+- **Inventory action buttons** — Eaten / Donated / Composted buttons directly on each inventory card (no recipe generation required)
+- **Donation & compost directory** — permanent two-column card with all 5 food pantries and 3 compost sites, always visible

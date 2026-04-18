@@ -35,6 +35,16 @@
 - [x] Blue badges for to-purchase items on shopping list + recipe cards
 - [x] Switch to transparent logo (logo_nobg.png)
 - [x] Add Ali (@Valiyev-Ali) and Steve (@steveonw) as GitHub collaborators
+- [x] Contrarian review: fix 8 bugs + 3 label mismatches
+- [x] Fix Dr Pepper / brand soda expiry matching
+- [x] Slow demo walkthrough with section scrolling
+- [x] Expand demo receipts to 18 items each
+- [x] Remove redundant Load Demo Scenario button
+- [x] Add textarea label for paste area
+- [x] Recipe urgency banner showing expiring items
+- [x] Teach Parsly input labels (Food name, Days until expiry)
+- [x] Action buttons on inventory cards (Eaten/Donated/Composted)
+- [x] Always-visible donation & compost directory
 
 ## Backlog
 
