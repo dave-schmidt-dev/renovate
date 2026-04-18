@@ -39,6 +39,10 @@ export function getSettings() {
   return loadJson(KEYS.settings, {
     mockMode: true,
     openrouterKey: "",
+    emailjsPublicKey: "",
+    emailjsServiceId: "",
+    emailjsTemplateId: "",
+    emailRecipient: "",
   });
 }
 

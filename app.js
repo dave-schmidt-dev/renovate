@@ -1,7 +1,7 @@
 import { fileToBase64, generatePlanWithFallback, ocrReceipt } from "./modules/ai.js";
 import { DEMO_RECEIPTS } from "./modules/demoData.js";
 import { buildShoppingSuggestions, summarizeRisk } from "./modules/planner.js";
-import { enrichWithAlias, parseReceiptText, toInventoryItems } from "./modules/receipt.js";
+import { enrichWithAlias, guessExpiry, parseReceiptText, toInventoryItems } from "./modules/receipt.js";
 import { attachRouteSuggestions, normalizeRouteDecisions, summarizeRoutes } from "./modules/routing.js";
 import {
   getAliasMap,
@@ -47,6 +47,12 @@ const els = {
   testKeysBtn: document.getElementById("testKeysBtn"),
   settingsStatus: document.getElementById("settingsStatus"),
   clearSessionBtn: document.getElementById("clearSessionBtn"),
+  emailjsPublicKey: document.getElementById("emailjsPublicKey"),
+  emailjsServiceId: document.getElementById("emailjsServiceId"),
+  emailjsTemplateId: document.getElementById("emailjsTemplateId"),
+  emailRecipient: document.getElementById("emailRecipient"),
+  emailShoppingBtn: document.getElementById("emailShoppingBtn"),
+  emailStatus: document.getElementById("emailStatus"),
 };
 
 init();
@@ -54,6 +60,10 @@ init();
 function init() {
   els.mockModeToggle.checked = state.settings.mockMode;
   els.openrouterKey.value = state.settings.openrouterKey || "";
+  els.emailjsPublicKey.value = state.settings.emailjsPublicKey || "";
+  els.emailjsServiceId.value = state.settings.emailjsServiceId || "";
+  els.emailjsTemplateId.value = state.settings.emailjsTemplateId || "";
+  els.emailRecipient.value = state.settings.emailRecipient || "";
   bindEvents();
   setupNav();
   renderInventory();
@@ -64,6 +74,10 @@ function bindEvents() {
   els.saveKeysBtn.addEventListener("click", () => {
     state.settings.mockMode = els.mockModeToggle.checked;
     state.settings.openrouterKey = els.openrouterKey.value.trim();
+    state.settings.emailjsPublicKey = els.emailjsPublicKey.value.trim();
+    state.settings.emailjsServiceId = els.emailjsServiceId.value.trim();
+    state.settings.emailjsTemplateId = els.emailjsTemplateId.value.trim();
+    state.settings.emailRecipient = els.emailRecipient.value.trim();
     saveSettings(state.settings);
     showSettingsStatus("Saved", "success");
   });
@@ -213,6 +227,45 @@ function bindEvents() {
     setStatus("Session cleared.");
     scrollToSection("section-dashboard");
   });
+
+  els.emailShoppingBtn.addEventListener("click", async () => {
+    const { emailjsPublicKey, emailjsServiceId, emailjsTemplateId, emailRecipient } = state.settings;
+    if (!emailjsPublicKey || !emailjsServiceId || !emailjsTemplateId || !emailRecipient) {
+      showEmailStatus("Configure EmailJS in Settings first", "error");
+      return;
+    }
+
+    // Build shopping list text
+    const items = [];
+    els.shoppingList.querySelectorAll(".font-headline").forEach(el => {
+      items.push("- " + el.textContent);
+    });
+    if (!items.length) {
+      showEmailStatus("No shopping items to send", "error");
+      return;
+    }
+
+    // Build inventory risk summary
+    const risk = state.inventory.filter(i => i.expiresInDays <= 3);
+    let body = "SHOPPING LIST\n" + items.join("\n");
+    if (risk.length) {
+      body += "\n\nAT-RISK ITEMS (<=3 days)\n" + risk.map(i => `- ${i.canonicalName} (${i.expiresInDays}d)`).join("\n");
+    }
+    body += "\n\n— Leftover Lens";
+
+    showEmailStatus("Sending...", "neutral");
+    try {
+      emailjs.init({ publicKey: emailjsPublicKey });
+      await emailjs.send(emailjsServiceId, emailjsTemplateId, {
+        to_email: emailRecipient,
+        subject: "Leftover Lens - Shopping List",
+        body: body,
+      });
+      showEmailStatus("Sent!", "success");
+    } catch (err) {
+      showEmailStatus("Failed: " + (err?.text || err?.message || err), "error");
+    }
+  });
 }
 
 function setupNav() {
@@ -255,16 +308,23 @@ function renderAliasCards() {
   clearElement(els.aliasReviewArea);
   state.aliasReviewRows.forEach((row, idx) => {
     const score = row.confidenceScore;
-    let confidenceClass, dotClass;
-    if (score >= 0.9) {
+    let confidenceClass, dotClass, confidenceLabel;
+    if (score >= 0.95) {
       confidenceClass = "bg-primary-fixed text-primary";
       dotClass = "bg-primary";
+      confidenceLabel = "Known Alias";
+    } else if (score >= 0.85) {
+      confidenceClass = "bg-primary-fixed text-primary";
+      dotClass = "bg-primary";
+      confidenceLabel = "AI Matched";
     } else if (score >= 0.5) {
       confidenceClass = "bg-tertiary-fixed text-on-tertiary-fixed";
       dotClass = "bg-tertiary";
+      confidenceLabel = "Best Guess";
     } else {
       confidenceClass = "bg-error-container text-on-error-container";
       dotClass = "bg-error";
+      confidenceLabel = "Needs Review";
     }
 
     const card = document.createElement("div");
@@ -305,7 +365,7 @@ function renderAliasCards() {
     const dot = document.createElement("span");
     dot.className = `w-1.5 h-1.5 rounded-full ${dotClass}`;
     confidenceBadge.appendChild(dot);
-    confidenceBadge.appendChild(document.createTextNode(`${Math.round(score * 100)}%`));
+    confidenceBadge.appendChild(document.createTextNode(confidenceLabel));
 
     const rememberLabel = document.createElement("label");
     rememberLabel.className = "flex items-center gap-2 cursor-pointer shrink-0";
@@ -315,7 +375,7 @@ function renderAliasCards() {
     rememberInput.dataset.field = "remember";
     rememberInput.dataset.idx = String(idx);
     rememberInput.type = "checkbox";
-    rememberInput.checked = score < 0.95;
+    rememberInput.checked = score < 0.85;
     const slider = document.createElement("span");
     slider.className = "slider";
     toggleDiv.appendChild(rememberInput);
@@ -628,6 +688,15 @@ function showSettingsStatus(msg, type) {
   const el = els.settingsStatus;
   el.textContent = msg;
   el.className = "font-body text-sm";
+  if (type === "success") el.classList.add("text-primary");
+  else if (type === "error") el.classList.add("text-error");
+  else el.classList.add("text-on-surface-variant");
+}
+
+function showEmailStatus(msg, type) {
+  const el = els.emailStatus;
+  el.textContent = msg;
+  el.className = "font-body text-xs";
   if (type === "success") el.classList.add("text-primary");
   else if (type === "error") el.classList.add("text-error");
   else el.classList.add("text-on-surface-variant");

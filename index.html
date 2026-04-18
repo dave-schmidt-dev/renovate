@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>
       tailwind.config = {
         theme: {
@@ -281,7 +282,14 @@
             <div id="recipesList" class="stack space-y-3"></div>
           </div>
           <div>
-            <h3 class="font-headline font-semibold text-base text-on-surface mb-3">Shopping Suggestions</h3>
+            <div class="flex items-center gap-3 mb-3">
+              <h3 class="font-headline font-semibold text-base text-on-surface">Shopping Suggestions</h3>
+              <button id="emailShoppingBtn" class="flex items-center gap-1.5 bg-surface-container-highest text-on-surface font-label text-xs font-medium px-3 py-1.5 rounded-full hover:bg-surface-container-high transition-colors border border-outline-variant">
+                <span class="material-symbols-outlined text-[16px]">email</span>
+                Email List
+              </button>
+              <span id="emailStatus" class="font-body text-xs"></span>
+            </div>
             <div id="shoppingList" class="stack space-y-3"></div>
           </div>
         </div>
@@ -314,6 +322,28 @@
               <label class="block">
                 <span class="font-label text-xs font-medium text-on-surface-variant block mb-1.5">OpenRouter API Key</span>
                 <input id="openrouterKey" type="password" placeholder="sk-or-..."
+                  class="w-full bg-surface-container border border-outline-variant rounded-xl px-3 py-2 font-body text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary" />
+              </label>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4 mb-4 mt-4 pt-4 border-t border-outline-variant">
+              <label class="block">
+                <span class="font-label text-xs font-medium text-on-surface-variant block mb-1.5">EmailJS Public Key</span>
+                <input id="emailjsPublicKey" type="text" placeholder="e.g. user_abc123..."
+                  class="w-full bg-surface-container border border-outline-variant rounded-xl px-3 py-2 font-body text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary" />
+              </label>
+              <label class="block">
+                <span class="font-label text-xs font-medium text-on-surface-variant block mb-1.5">EmailJS Service ID</span>
+                <input id="emailjsServiceId" type="text" placeholder="e.g. service_abc123"
+                  class="w-full bg-surface-container border border-outline-variant rounded-xl px-3 py-2 font-body text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary" />
+              </label>
+              <label class="block">
+                <span class="font-label text-xs font-medium text-on-surface-variant block mb-1.5">EmailJS Template ID</span>
+                <input id="emailjsTemplateId" type="text" placeholder="e.g. template_abc123"
+                  class="w-full bg-surface-container border border-outline-variant rounded-xl px-3 py-2 font-body text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary" />
+              </label>
+              <label class="block">
+                <span class="font-label text-xs font-medium text-on-surface-variant block mb-1.5">Recipient Email</span>
+                <input id="emailRecipient" type="email" placeholder="you@example.com"
                   class="w-full bg-surface-container border border-outline-variant rounded-xl px-3 py-2 font-body text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary" />
               </label>
             </div>
