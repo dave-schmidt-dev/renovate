@@ -212,7 +212,9 @@ function bindEvents() {
   });
 
   els.clearSessionBtn.addEventListener("click", () => {
+    const settings = state.settings;
     localStorage.clear();
+    saveSettings(settings);
     location.reload();
   });
 
