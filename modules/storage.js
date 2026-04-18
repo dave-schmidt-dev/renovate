@@ -38,8 +38,7 @@ export function saveInventory(items) {
 export function getSettings() {
   return loadJson(KEYS.settings, {
     mockMode: true,
-    geminiKey: "",
-    openaiKey: "",
+    openrouterKey: "",
   });
 }
 

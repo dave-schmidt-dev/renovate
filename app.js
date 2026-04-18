@@ -21,8 +21,7 @@ const state = {
 
 const els = {
   mockModeToggle: document.getElementById("mockModeToggle"),
-  geminiKey: document.getElementById("geminiKey"),
-  openaiKey: document.getElementById("openaiKey"),
+  openrouterKey: document.getElementById("openrouterKey"),
   saveKeysBtn: document.getElementById("saveKeysBtn"),
   receiptFile: document.getElementById("receiptFile"),
   receiptText: document.getElementById("receiptText"),
@@ -53,8 +52,7 @@ init();
 
 function init() {
   els.mockModeToggle.checked = state.settings.mockMode;
-  els.geminiKey.value = state.settings.geminiKey || "";
-  els.openaiKey.value = state.settings.openaiKey || "";
+  els.openrouterKey.value = state.settings.openrouterKey || "";
   bindEvents();
   setupNav();
   renderInventory();
@@ -64,60 +62,32 @@ function init() {
 function bindEvents() {
   els.saveKeysBtn.addEventListener("click", () => {
     state.settings.mockMode = els.mockModeToggle.checked;
-    state.settings.geminiKey = els.geminiKey.value.trim();
-    state.settings.openaiKey = els.openaiKey.value.trim();
+    state.settings.openrouterKey = els.openrouterKey.value.trim();
     saveSettings(state.settings);
     showSettingsStatus("Saved", "success");
   });
 
   els.testKeysBtn.addEventListener("click", async () => {
-    const geminiKey = els.geminiKey.value.trim();
-    const openaiKey = els.openaiKey.value.trim();
-    if (!geminiKey && !openaiKey) {
-      showSettingsStatus("Enter at least one API key first", "error");
+    const key = els.openrouterKey.value.trim();
+    if (!key) {
+      showSettingsStatus("Enter your OpenRouter API key first", "error");
       return;
     }
     showSettingsStatus("Testing...", "neutral");
-    const results = [];
-    if (geminiKey) {
-      try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(geminiKey)}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Reply OK" }] }] }),
-          }
-        );
-        if (res.ok) {
-          results.push("Gemini OK");
-        } else {
-          const body = await res.json().catch(() => ({}));
-          const detail = body?.error?.message || `status ${res.status}`;
-          results.push(`Gemini: ${detail}`);
-        }
-      } catch (e) {
-        results.push(`Gemini unreachable: ${e.message}`);
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/models", {
+        headers: { "Authorization": "Bearer " + key },
+      });
+      if (res.ok) {
+        showSettingsStatus("OpenRouter OK", "success");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        const detail = data?.error?.message || `status ${res.status}`;
+        showSettingsStatus(`OpenRouter: ${detail}`, "error");
       }
+    } catch (e) {
+      showSettingsStatus(`OpenRouter unreachable: ${e.message}`, "error");
     }
-    if (openaiKey) {
-      try {
-        const res = await fetch("https://api.openai.com/v1/models", {
-          headers: { Authorization: `Bearer ${openaiKey}` },
-        });
-        if (res.ok) {
-          results.push("OpenAI OK");
-        } else {
-          const body = await res.json().catch(() => ({}));
-          const detail = body?.error?.message || `status ${res.status}`;
-          results.push(`OpenAI: ${detail}`);
-        }
-      } catch (e) {
-        results.push(`OpenAI unreachable: ${e.message}`);
-      }
-    }
-    const allOk = results.every((r) => r.endsWith("OK"));
-    showSettingsStatus(results.join(" · "), allOk ? "success" : "error");
   });
 
   els.loadScenarioBtn.addEventListener("click", () => {

@@ -1,6 +1,4 @@
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-const OPENAI_URL = "https://api.openai.com/v1/responses";
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 function buildPrompt(inventory) {
   return `
@@ -117,37 +115,24 @@ function safeParseJson(text) {
   }
 }
 
-async function callGemini(prompt, key) {
-  const res = await fetch(`${GEMINI_URL}?key=${encodeURIComponent(key)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
-    }),
-  });
-  if (!res.ok) throw new Error("Gemini request failed");
-  const json = await res.json();
-  const text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-  return safeParseJson(text);
-}
-
-async function callOpenAI(prompt, key) {
-  const res = await fetch(OPENAI_URL, {
+async function callOpenRouter(prompt, key) {
+  const res = await fetch(OPENROUTER_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
+      "Authorization": "Bearer " + key,
+      "HTTP-Referer": "https://leftover-lens.app",
+      "X-Title": "Leftover Lens",
     },
     body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      input: prompt,
-      text: { format: { type: "json_object" } },
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.2,
     }),
   });
-  if (!res.ok) throw new Error("OpenAI request failed");
-  const json = await res.json();
-  const text = json?.output?.[0]?.content?.[0]?.text ?? "";
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  const text = data.choices?.[0]?.message?.content || "";
   return safeParseJson(text);
 }
 
@@ -158,21 +143,12 @@ export async function generatePlanWithFallback(inventory, settings) {
     return { ...heuristicPlan(inventory), provider: "mock" };
   }
 
-  if (settings.geminiKey) {
+  if (settings.openrouterKey) {
     try {
-      const result = await callGemini(prompt, settings.geminiKey);
-      if (result?.recipes && result?.routeDecisions) return { ...result, provider: "gemini" };
+      const result = await callOpenRouter(prompt, settings.openrouterKey);
+      if (result?.recipes && result?.routeDecisions) return { ...result, provider: "openrouter" };
     } catch {
-      // continue to next provider
-    }
-  }
-
-  if (settings.openaiKey) {
-    try {
-      const result = await callOpenAI(prompt, settings.openaiKey);
-      if (result?.recipes && result?.routeDecisions) return { ...result, provider: "openai" };
-    } catch {
-      // continue to fallback
+      // fall through to heuristic
     }
   }
 
