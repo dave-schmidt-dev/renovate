@@ -89,9 +89,15 @@ function bindEvents() {
             body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Reply OK" }] }] }),
           }
         );
-        results.push(res.ok ? "Gemini OK" : `Gemini failed (${res.status})`);
-      } catch {
-        results.push("Gemini unreachable");
+        if (res.ok) {
+          results.push("Gemini OK");
+        } else {
+          const body = await res.json().catch(() => ({}));
+          const detail = body?.error?.message || `status ${res.status}`;
+          results.push(`Gemini: ${detail}`);
+        }
+      } catch (e) {
+        results.push(`Gemini unreachable: ${e.message}`);
       }
     }
     if (openaiKey) {
@@ -99,9 +105,15 @@ function bindEvents() {
         const res = await fetch("https://api.openai.com/v1/models", {
           headers: { Authorization: `Bearer ${openaiKey}` },
         });
-        results.push(res.ok ? "OpenAI OK" : `OpenAI failed (${res.status})`);
-      } catch {
-        results.push("OpenAI unreachable");
+        if (res.ok) {
+          results.push("OpenAI OK");
+        } else {
+          const body = await res.json().catch(() => ({}));
+          const detail = body?.error?.message || `status ${res.status}`;
+          results.push(`OpenAI: ${detail}`);
+        }
+      } catch (e) {
+        results.push(`OpenAI unreachable: ${e.message}`);
       }
     }
     const allOk = results.every((r) => r.endsWith("OK"));
