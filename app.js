@@ -495,14 +495,21 @@ function renderInventory() {
     { key: "medium", label: "Use This Week",   icon: "schedule",    barClass: "risk-bar-medium", badgeClass: "bg-secondary-fixed text-on-secondary-fixed",          items: groups.medium },
     { key: "low",    label: "Fresh",           icon: "check_circle", barClass: "risk-bar-low",   badgeClass: "bg-surface-container text-on-surface-variant",        items: groups.low },
   ];
+  const hasHigh = groups.high.length > 0;
+  let firstGroupOpened = false;
   groupConfig.forEach((grp) => {
     if (!grp.items.length) return;
     grp.items.sort((a, b) => daysLeft(a) - daysLeft(b));
     const section = document.createElement("details");
-    section.open = grp.key === "high" || state.inventory.length <= 15;
+    const autoOpen = state.inventory.length <= 15 || grp.key === "high" || (!hasHigh && !firstGroupOpened);
+    section.open = autoOpen;
+    if (autoOpen) firstGroupOpened = true;
     section.className = "mb-3";
     const summary = document.createElement("summary");
-    summary.className = "flex items-center gap-2 cursor-pointer select-none py-2 px-1 rounded-xl hover:bg-surface-container-low transition-colors";
+    summary.className = "list-none flex items-center gap-2 cursor-pointer select-none py-2 px-2 rounded-xl hover:bg-surface-container-low transition-colors [&::-webkit-details-marker]:hidden";
+    const chevron = document.createElement("span");
+    chevron.className = "material-symbols-outlined text-[18px] text-on-surface-variant transition-transform duration-200";
+    chevron.textContent = "expand_more";
     const sIcon = document.createElement("span");
     sIcon.className = "material-symbols-outlined text-[18px] text-on-surface-variant";
     sIcon.textContent = grp.icon;
@@ -512,9 +519,14 @@ function renderInventory() {
     const sCount = document.createElement("span");
     sCount.className = `${grp.badgeClass} px-2 py-0.5 rounded-full font-label text-[10px] font-bold`;
     sCount.textContent = grp.items.length;
+    summary.appendChild(chevron);
     summary.appendChild(sIcon);
     summary.appendChild(sLabel);
     summary.appendChild(sCount);
+    section.addEventListener("toggle", () => {
+      chevron.style.transform = section.open ? "rotate(180deg)" : "rotate(0deg)";
+    });
+    if (autoOpen) chevron.style.transform = "rotate(180deg)";
     section.appendChild(summary);
 
     const list = document.createElement("div");
@@ -758,10 +770,15 @@ function renderRouting(decisions, summary) {
     const cfg = routeConfig[key];
 
     const section = document.createElement("details");
-    section.open = key === "eat" || key === "donate" || decisions.length <= 15;
+    const routeOpen = key === "eat" || key === "donate" || decisions.length <= 15;
+    section.open = routeOpen;
     section.className = "mb-3";
     const sectionSummary = document.createElement("summary");
-    sectionSummary.className = "flex items-center gap-2 cursor-pointer select-none py-2 px-1 rounded-xl hover:bg-surface-container-low transition-colors";
+    sectionSummary.className = "list-none flex items-center gap-2 cursor-pointer select-none py-2 px-2 rounded-xl hover:bg-surface-container-low transition-colors [&::-webkit-details-marker]:hidden";
+    const rChevron = document.createElement("span");
+    rChevron.className = "material-symbols-outlined text-[18px] text-on-surface-variant transition-transform duration-200";
+    rChevron.textContent = "expand_more";
+    if (routeOpen) rChevron.style.transform = "rotate(180deg)";
     const sIcon = document.createElement("span");
     sIcon.className = "material-symbols-outlined text-[18px] text-on-surface-variant";
     sIcon.textContent = cfg.icon;
@@ -771,9 +788,13 @@ function renderRouting(decisions, summary) {
     const sCount = document.createElement("span");
     sCount.className = `${cfg.badgeClass} px-2 py-0.5 rounded-full font-label text-[10px] font-bold`;
     sCount.textContent = items.length;
+    sectionSummary.appendChild(rChevron);
     sectionSummary.appendChild(sIcon);
     sectionSummary.appendChild(sLabel);
     sectionSummary.appendChild(sCount);
+    section.addEventListener("toggle", () => {
+      rChevron.style.transform = section.open ? "rotate(180deg)" : "rotate(0deg)";
+    });
     section.appendChild(sectionSummary);
 
     const list = document.createElement("div");
