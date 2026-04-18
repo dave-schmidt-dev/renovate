@@ -56,15 +56,15 @@ HUMMUS 3.79`,
 ];
 
 export const DONATION_LOCATIONS = [
-  "ACTS Hunger Prevention Center — actspwc.org",
-  "House of Mercy, Manassas — houseofmercyva.org",
-  "Sacred Heart Food Pantry, Manassas — sacredheartmanassas.org",
-  "Northern Virginia Family Service — nvfs.org",
-  "Bull Run UU Emergency Food Pantry — bruu.org",
+  "ACTS Hunger Prevention Center — 3901 ACTS Ln, Dumfries, VA 22026",
+  "House of Mercy — 8170 Flannery Ct, Manassas, VA 20109",
+  "Sacred Heart Food Pantry — 12975 Purcell Rd, Manassas, VA 20112",
+  "Northern Virginia Family Service — 10058 Dean Dr, Manassas, VA 20110",
+  "Bull Run UU Emergency Food Pantry — 9350 Main St, Manassas, VA 20110",
 ];
 
 export const COMPOST_LOCATIONS = [
-  "Prince William County yard waste drop-off",
-  "NVCC Manassas campus compost bins",
-  "Manassas farmers market green waste station",
+  "PWC Compost Facility — 13000 Hansen Farm Rd, Manassas, VA",
+  "NVCC Manassas Campus — 6901 Sudley Rd, Manassas, VA 20109",
+  "Manassas Farmers Market — 9024 Prince William St, Manassas, VA 20110",
 ];
