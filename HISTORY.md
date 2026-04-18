@@ -19,3 +19,20 @@
 - Added CSS custom property fallback for offline demo (hackathon Wi-Fi reliability)
 - Added "Quick Demo" one-click button for judges
 - Design decisions documented in `plans/merge-cursor-stitch.md`
+
+## 2026-04-18 — Feature Enhancements
+
+- **Renamed to Parsly** (from Leftover Lens) — updated across all files, localStorage keys, API headers
+- **OpenRouter integration** — replaced Gemini/OpenAI with single OpenRouter provider (GPT-4o-mini)
+- **Receipt image OCR** — upload receipt photos, AI vision extracts food items automatically
+- **USDA FoodKeeper database** — bundled 587 items / 1217 keywords from USDA FSIS for authoritative shelf life data
+- **Real expiration dates** — items now store `expiresAt` ISO date, `daysLeft()` computes actual remaining time
+- **Smart routing** — shelf-stable items (soda, candy, pasta) no longer marked as failure. Only truly expiring items get donate/compost
+- **Confidence labels** — replaced confusing "90%" with "Known Alias", "AI Matched", "Best Guess", "Needs Review"
+- **EmailJS integration** — send shopping lists via email (leftoverlens.app@gmail.com)
+- **Food waste stats** — verified USDA/ReFED/UNEP statistics on dashboard
+- **Manassas food pantries** — real donation locations (ACTS, House of Mercy, Sacred Heart, NVFS, Bull Run UU)
+- **GitHub Pages deployment** — live at dave-schmidt-dev.github.io/renovate/
+- **Parsly logo** — integrated into side nav and mobile top bar
+- **Settings** — API key test connection with detailed error messages, inline save feedback
+- **Clear Session** — preserves API keys, full page reload for clean state

@@ -59,6 +59,8 @@ init();
 
 function init() {
   els.mockModeToggle.checked = state.settings.mockMode;
+  const mobileMock = document.getElementById("mockModeToggleMobile");
+  if (mobileMock) mobileMock.checked = state.settings.mockMode;
   els.openrouterKey.value = state.settings.openrouterKey || "";
   els.emailjsPublicKey.value = state.settings.emailjsPublicKey || "";
   els.emailjsServiceId.value = state.settings.emailjsServiceId || "";

@@ -20,13 +20,15 @@ AVOC HASS 4.99`,
 ];
 
 export const DONATION_LOCATIONS = [
-  "Campus pantry drop-off (Mon-Fri 9am-5pm)",
-  "Community fridge on Main St",
-  "Neighborhood food bank intake desk",
+  "ACTS Hunger Prevention Center — actspwc.org",
+  "House of Mercy, Manassas — houseofmercyva.org",
+  "Sacred Heart Food Pantry, Manassas — sacredheartmanassas.org",
+  "Northern Virginia Family Service — nvfs.org",
+  "Bull Run UU Emergency Food Pantry — bruu.org",
 ];
 
 export const COMPOST_LOCATIONS = [
-  "City compost hub, Elm Ave",
-  "Farmer's market green bin station",
-  "Campus sustainability compost zone",
+  "Prince William County yard waste drop-off",
+  "NVCC Manassas campus compost bins",
+  "Manassas farmers market green waste station",
 ];

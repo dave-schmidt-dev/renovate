@@ -2,68 +2,71 @@
 
 Receipt-to-recipe sustainability assistant for the NVCC Renovate hackathon.
 
+**Live demo**: https://dave-schmidt-dev.github.io/renovate/
+
 ## What It Does
 
-- Bulk-imports groceries from receipt text/file input
+- Scans receipt photos with AI vision (OpenRouter GPT-4o-mini) to extract grocery items
 - Learns short receipt aliases (example: `MLK 2%` -> `milk`) for future scans
+- Tracks real expiration dates using USDA FoodKeeper database (587 items, 1217 keywords)
 - Generates recipes that prioritize foods closest to spoilage
-- Builds suggested shopping items for missing recipe ingredients
-- Routes leftovers using policy: `eat -> donate -> compost -> failure`
-- Tracks `failure` count as a primary sustainability metric
+- Routes items: eat (use in recipes) -> donate (local Manassas food pantries) -> compost -> failure
+- Sends shopping lists via email (EmailJS integration)
+- Tracks sustainability metrics: items at risk, items rescued, failure count
 
 ## Quick Start
 
-1. From this folder, run:
+1. Open https://dave-schmidt-dev.github.io/renovate/ or serve locally:
    ```
    python3 -m http.server 4173
    ```
-2. Open `http://localhost:4173`
-3. Click **Load Demo & Go** for the full automated demo, or:
-   - Click **Load Demo Scenario** to paste receipt lines
-   - Click **Scan Receipt**, review aliases, then **Confirm & Import**
-   - Click **Generate Recipes** to see recipes, shopping list, and routing
+2. Enter your OpenRouter API key in Settings (get one at openrouter.ai)
+3. Upload a receipt photo and click **Scan Receipt**, or click **Load Demo & Go**
+4. Review detected items, adjust names/expiry if needed, click **Confirm & Import**
+5. Click **Generate Recipes** for AI-powered meal suggestions and food routing
 
-## AI Provider Order
+## AI Provider
 
-The app has a fallback chain for recipe generation:
+Uses OpenRouter (GPT-4o-mini) for:
+- Receipt image OCR (vision API)
+- Recipe generation + sustainability routing
 
-1. **Gemini Flash** (primary live provider — needs API key)
-2. **OpenAI mini** (backup — needs API key)
-3. **Mock mode heuristic** (default — works fully offline)
-
-Mock Mode is on by default so the demo always works without API keys.
+Falls back to local heuristic when no API key is set. Mock mode available via toggle.
 
 ## File Structure
 
 ```
-index.html          — Single-page app with M3 design system
-styles.css          — CSS custom properties + Tailwind CDN fallback
-app.js              — Main controller, DOM rendering, event wiring
+index.html              — Single-page app with M3 design system
+styles.css              — CSS custom properties + Tailwind CDN fallback
+app.js                  — Main controller, DOM rendering, event wiring
+logo.png                — Parsly logo
 modules/
-  storage.js        — localStorage persistence (aliases, inventory, settings)
-  demoData.js       — Demo receipt scenarios + donation/compost locations
-  receipt.js        — Receipt parsing, alias matching, inventory creation
-  ai.js             — AI provider fallback (Gemini → OpenAI → heuristic)
-  planner.js        — Shopping suggestions + risk summary
-  routing.js        — Eat/donate/compost/failure routing logic
-stitch templates/   — Original Google Stitch UI design references
+  storage.js            — localStorage persistence (aliases, inventory, settings)
+  demoData.js           — Demo receipt scenarios + Manassas donation/compost locations
+  receipt.js            — Receipt parsing, alias matching, expiry estimation
+  ai.js                 — OpenRouter API (vision OCR + recipe generation)
+  planner.js            — Shopping suggestions + risk summary
+  routing.js            — Eat/donate/compost/failure routing logic
+  foodkeeper.js         — USDA FoodKeeper database (587 items, 1217 keywords)
+stitch templates/       — Original Google Stitch UI design references
 ```
+
+## Data Sources
+
+- **USDA FoodKeeper** (FSIS via data.gov) — authoritative food shelf life data
+- **Food waste stats**: USDA, ReFED, UNEP Food Waste Index 2024
+- **Donation locations**: Real food pantries near Manassas, VA (ACTS, House of Mercy, Sacred Heart, NVFS, Bull Run UU)
 
 ## Design
 
-The UI combines Google Stitch's Material Design 3 templates with Cursor's working JavaScript. Key design elements:
+Material Design 3 color system from Google Stitch templates:
 
 - M3 color palette (primary green `#3d653e`, error red `#ba1a1a`)
-- Manrope (headlines) + Inter (body) fonts
-- Material Symbols Outlined icons
+- Manrope (headlines) + Inter (body) fonts, Material Symbols icons
 - Sticky side navigation with scroll-tracking highlights
 - Risk color coding: red (<=3 days), amber (4-7 days), green (>7 days)
-- CSS custom property fallback for offline use (hackathon Wi-Fi)
-
-## MVP Boundaries
-
-- In scope: receipt import + alias memory, recipe generation + shopping suggestions, donate/compost/failure routing + summary
-- Out of scope: user accounts/auth, production backend/database, full donation API integration
+- Confidence labels: Known Alias, AI Matched, Best Guess, Needs Review
+- CSS custom property fallback for offline use
 
 ## Team
 
