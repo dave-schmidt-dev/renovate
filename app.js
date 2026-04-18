@@ -585,8 +585,28 @@ function buildInventoryCard(item, riskBarClass, expiryBadgeClass) {
   subRow.appendChild(qtySpan);
   subRow.appendChild(rawSpan);
 
+  const actionRow = document.createElement("div");
+  actionRow.className = "flex gap-2 mt-2";
+  const actions = [
+    { label: "Eaten",     icon: "restaurant",         action: "eaten",     style: "bg-secondary-container text-on-secondary-container" },
+    { label: "Donated",   icon: "volunteer_activism",  action: "donated",   style: "bg-primary-fixed text-primary" },
+    { label: "Composted", icon: "compost",             action: "composted", style: "bg-tertiary-fixed text-on-tertiary-fixed" },
+  ];
+  actions.forEach((a) => {
+    const btn = document.createElement("button");
+    btn.className = `flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg ${a.style}`;
+    const btnIcon = document.createElement("span");
+    btnIcon.className = "material-symbols-outlined text-[14px]";
+    btnIcon.textContent = a.icon;
+    btn.appendChild(btnIcon);
+    btn.appendChild(document.createTextNode(a.label));
+    btn.addEventListener("click", () => removeInventoryItem(item.canonicalName, a.action));
+    actionRow.appendChild(btn);
+  });
+
   info.appendChild(topRow);
   info.appendChild(subRow);
+  info.appendChild(actionRow);
   card.appendChild(riskBar);
   card.appendChild(iconBox);
   card.appendChild(info);
