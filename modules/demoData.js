@@ -65,6 +65,4 @@ export const DONATION_LOCATIONS = [
 
 export const COMPOST_LOCATIONS = [
   "PWC Compost Facility — 13000 Hansen Farm Rd, Manassas, VA",
-  "NVCC Manassas Campus — 6901 Sudley Rd, Manassas, VA 20109",
-  "Manassas Farmers Market — 9024 Prince William St, Manassas, VA 20110",
 ];
