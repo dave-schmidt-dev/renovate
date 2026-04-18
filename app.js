@@ -12,6 +12,8 @@ import {
   upsertAlias,
 } from "./modules/storage.js";
 
+const COLLAPSE_LIMIT = 5;
+
 const state = {
   aliasReviewRows: [],
   inventory: getInventory(),
@@ -456,7 +458,7 @@ function collectAliasRows() {
   });
 }
 
-const COLLAPSE_LIMIT = 5;
+
 
 function renderInventory() {
   clearElement(els.inventoryMeta);
