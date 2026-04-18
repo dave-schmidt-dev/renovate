@@ -10,7 +10,7 @@
 
 ---
 
-Parsly scans your grocery receipts, tracks what's about to expire, and generates recipes that use your most perishable items first. Anything you can't eat gets routed to local food pantries or compost — nothing goes to waste.
+40% of the food supply in the United States is wasted, most of it in our own kitchens. Parsley scans your grocery receipts, tracks what's about to expire, and generates recipes that use your most perishable items first. Anything you can't eat gets routed to local food pantries or compost, nothing goes to waste.
 
 Built for the [NVCC Renovate Hackathon](https://www.nvcc.edu/renovate/) (Spring 2026).
 
