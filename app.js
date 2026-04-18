@@ -231,17 +231,20 @@ function bindEvents() {
   els.quickDemoBtn.addEventListener("click", () => {
     const sample = DEMO_RECEIPTS[Math.floor(Math.random() * DEMO_RECEIPTS.length)];
     els.receiptText.value = sample;
-    setStatus("Demo loaded. Running scan...");
+    setStatus("Demo loaded. Scanning receipt...");
+    scrollToSection("section-receipt");
     setTimeout(() => {
       els.scanReceiptBtn.click();
+      scrollToSection("section-alias");
       setTimeout(() => {
         els.confirmImportBtn.click();
+        scrollToSection("section-inventory");
         setTimeout(() => {
           els.generateRecipesBtn.click();
-          setTimeout(() => scrollToSection("section-recipes"), 300);
-        }, 300);
-      }, 300);
-    }, 300);
+          setTimeout(() => scrollToSection("section-recipes"), 1200);
+        }, 1500);
+      }, 1500);
+    }, 1500);
   });
 
   els.clearSessionBtn.addEventListener("click", () => {
