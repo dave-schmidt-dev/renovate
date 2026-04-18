@@ -1,4 +1,4 @@
-import { generatePlanWithFallback } from "./modules/ai.js";
+import { fileToBase64, generatePlanWithFallback, ocrReceipt } from "./modules/ai.js";
 import { DEMO_RECEIPTS } from "./modules/demoData.js";
 import { buildShoppingSuggestions, summarizeRisk } from "./modules/planner.js";
 import { enrichWithAlias, parseReceiptText, toInventoryItems } from "./modules/receipt.js";
@@ -46,6 +46,7 @@ const els = {
   statFailureCount: document.getElementById("statFailureCount"),
   testKeysBtn: document.getElementById("testKeysBtn"),
   settingsStatus: document.getElementById("settingsStatus"),
+  clearSessionBtn: document.getElementById("clearSessionBtn"),
 };
 
 init();
@@ -97,6 +98,32 @@ function bindEvents() {
   });
 
   els.scanReceiptBtn.addEventListener("click", async () => {
+    const imageFile = els.receiptFile.files?.[0];
+
+    if (imageFile && imageFile.type.startsWith("image/")) {
+      if (els.mockModeToggle.checked || !state.settings.openrouterKey) {
+        setStatus("Image OCR requires an OpenRouter API key with Mock Mode off.");
+        return;
+      }
+      setStatus("Scanning receipt image with AI...");
+      try {
+        const base64 = await fileToBase64(imageFile);
+        const items = await ocrReceipt(base64, imageFile.type, state.settings.openrouterKey);
+        state.aliasReviewRows = items.map((item) => ({
+          rawLabel: item.name || "Unknown",
+          canonicalFoodName: item.name || "Unknown",
+          confidenceScore: 0.9,
+          estimatedQuantity: item.qty || 1,
+        }));
+        renderAliasCards();
+        setStatus(`Found ${state.aliasReviewRows.length} item(s) in image. Review and import.`);
+      } catch (err) {
+        setStatus(`Image OCR failed: ${err.message}`);
+      }
+      return;
+    }
+
+    // Fall through to text parsing when no image is selected
     setStatus("Scanning receipt...");
     const text = await readInputReceipt();
     if (!text) {
@@ -168,6 +195,23 @@ function bindEvents() {
         }, 300);
       }, 300);
     }, 300);
+  });
+
+  els.clearSessionBtn.addEventListener("click", () => {
+    localStorage.clear();
+    state.inventory = [];
+    state.aliasReviewRows = [];
+    state.recipesGenerated = 0;
+    clearElement(els.aliasReviewArea);
+    clearElement(els.recipesList);
+    clearElement(els.shoppingList);
+    clearElement(els.routingList);
+    clearElement(els.routingSummary);
+    renderInventory();
+    renderFailureBadge(0);
+    updateDashboard(null, null);
+    setStatus("Session cleared.");
+    scrollToSection("section-dashboard");
   });
 }
 

@@ -136,6 +136,63 @@ async function callOpenRouter(prompt, key) {
   return safeParseJson(text);
 }
 
+const OCR_PROMPT = `You are a receipt parser. Extract ONLY the food/grocery items from this receipt image.
+Return ONLY a JSON array of items. No prose. No markdown. No code fences. Example:
+[{"name":"Bananas Organic","qty":6,"unit":"ct"},{"name":"Milk 2%","qty":1,"unit":"gal"}]
+Ignore totals, tax, payment info, store name, date. Only food items.`;
+
+export function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function ocrReceipt(imageBase64, mediaType, apiKey) {
+  const res = await fetch(OPENROUTER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + apiKey,
+      "HTTP-Referer": "https://leftover-lens.app",
+      "X-Title": "Leftover Lens",
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-4o-mini",
+      messages: [{
+        role: "user",
+        content: [
+          { type: "text", text: OCR_PROMPT },
+          { type: "image_url", image_url: { url: "data:" + (mediaType || "image/jpeg") + ";base64," + imageBase64 } },
+        ],
+      }],
+      temperature: 0.1,
+    }),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  const text = data.choices?.[0]?.message?.content || "";
+
+  // Strip markdown fences if present, then parse JSON
+  const stripped = text.replace(/^```[a-z]*\n?/i, "").replace(/```\s*$/i, "").trim();
+  try {
+    return JSON.parse(stripped);
+  } catch {
+    // Try to find [...] in the text
+    const match = stripped.match(/\[[\s\S]*\]/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch {
+        // fall through
+      }
+    }
+    throw new Error("OCR response could not be parsed as a JSON array.");
+  }
+}
+
 export async function generatePlanWithFallback(inventory, settings) {
   const prompt = buildPrompt(inventory);
 
