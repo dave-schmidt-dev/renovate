@@ -1,27 +1,40 @@
+import { daysLeft } from "./receipt.js";
+
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 function buildPrompt(inventory) {
+  const items = inventory.map(item => ({
+    name: item.canonicalName,
+    daysLeft: daysLeft(item),
+    quantity: item.quantity,
+  }));
   return `
 Return strict JSON only.
-Given inventory items with expiresInDays, generate exactly 3 recipes that prioritize low expiresInDays first.
-For each recipe provide:
-- recipeName
-- usesItems (array)
-- missingItems (array)
-- steps (array of 3-5 concise steps)
+You are Parsly, a food-waste prevention meal planner.
 
-Then provide routeDecisions for each inventory item with:
-- item
-- route (eat|donate|compost|failure)
-- reason
+Given these grocery items with daysLeft until expiration, generate exactly 3 recipes.
+PRIORITIZE items with low daysLeft — use them first to prevent waste.
+Items with many daysLeft (30+) are pantry staples — use them freely but don't force them into recipes.
+
+For each recipe:
+- recipeName: appetizing name
+- usesItems: array of item names from inventory that this recipe uses
+- missingItems: array of simple, cheap ingredients needed to complete the recipe (e.g. oil, garlic, salt, rice)
+- steps: array of 3-5 concise cooking steps
+
+Then provide routeDecisions for EVERY inventory item:
+- item: the item name
+- route: "eat" | "donate" | "compost" | "failure"
+- reason: brief explanation
+Rules: Items used in recipes = "eat". Items expiring in <=2 days not in recipes = "donate". Items already expired = "compost". Only use "failure" if truly unsalvageable. Items with weeks/months left = "eat" with no urgency.
 
 Inventory:
-${JSON.stringify(inventory, null, 2)}
+${JSON.stringify(items, null, 2)}
 `;
 }
 
 function heuristicPlan(inventory) {
-  const sorted = [...inventory].sort((a, b) => a.expiresInDays - b.expiresInDays);
+  const sorted = [...inventory].sort((a, b) => daysLeft(a) - daysLeft(b));
   const urgent = sorted.slice(0, 5).map((i) => i.canonicalName);
 
   const adjectives = ["Fresh", "Hearty", "Savory", "Rustic", "Crispy", "Zesty", "Creamy", "Golden"];
@@ -89,16 +102,17 @@ function heuristicPlan(inventory) {
   ];
 
   const routeDecisions = inventory.map((item) => {
+    const days = daysLeft(item);
     if (urgent.includes(item.canonicalName)) {
-      return { item: item.canonicalName, route: "eat", reason: "Used in urgent recipe set." };
+      return { item: item.canonicalName, route: "eat", reason: "Used in recipe — eat this week." };
     }
-    if (item.expiresInDays <= 3) {
-      return { item: item.canonicalName, route: "donate", reason: "High urgency; unlikely to cook in time." };
+    if (days <= 0) {
+      return { item: item.canonicalName, route: "compost", reason: "Expired — compost if possible." };
     }
-    if (item.expiresInDays <= 7) {
-      return { item: item.canonicalName, route: "compost", reason: "Not selected; compost recommended." };
+    if (days <= 2) {
+      return { item: item.canonicalName, route: "donate", reason: "Expiring very soon — donate if you can't eat today." };
     }
-    return { item: item.canonicalName, route: "eat", reason: "Stable shelf window." };
+    return { item: item.canonicalName, route: "eat", reason: `Good for ${days} more days.` };
   });
 
   return { recipes, routeDecisions };

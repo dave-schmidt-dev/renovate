@@ -1,7 +1,7 @@
 import { fileToBase64, generatePlanWithFallback, ocrReceipt } from "./modules/ai.js";
 import { DEMO_RECEIPTS } from "./modules/demoData.js";
 import { buildShoppingSuggestions, summarizeRisk } from "./modules/planner.js";
-import { enrichWithAlias, guessExpiry, parseReceiptText, toInventoryItems } from "./modules/receipt.js";
+import { daysLeft, enrichWithAlias, guessExpiry, parseReceiptText, toInventoryItems } from "./modules/receipt.js";
 import { attachRouteSuggestions, normalizeRouteDecisions, summarizeRoutes } from "./modules/routing.js";
 import {
   getAliasMap,
@@ -130,9 +130,9 @@ function bindEvents() {
     const imageFile = els.receiptFile.files?.[0];
 
     if (imageFile && imageFile.type.startsWith("image/")) {
-      const apiKey = els.openrouterKey.value.trim() || state.settings.openrouterKey;
+      const apiKey = getApiKey();
       if (els.mockModeToggle.checked || !apiKey) {
-        setStatus("Image OCR requires an OpenRouter API key with Mock Mode off.");
+        setStatus("Image OCR requires an OpenRouter API key with Mock Mode off. Check Settings.");
         return;
       }
       setStatus("Scanning receipt image with AI...");
@@ -192,7 +192,7 @@ function bindEvents() {
     try {
       const result = await generatePlanWithFallback(state.inventory, {
         ...state.settings,
-        openrouterKey: els.openrouterKey.value.trim() || state.settings.openrouterKey,
+        openrouterKey: getApiKey(),
         mockMode: els.mockModeToggle.checked,
       });
       const recipes = result.recipes || [];
@@ -259,10 +259,10 @@ function bindEvents() {
     }
 
     // Build inventory risk summary
-    const risk = state.inventory.filter(i => i.expiresInDays <= 3);
+    const risk = state.inventory.filter(i => daysLeft(i) <= 3);
     let body = "SHOPPING LIST\n" + items.join("\n");
     if (risk.length) {
-      body += "\n\nAT-RISK ITEMS (<=3 days)\n" + risk.map(i => `- ${i.canonicalName} (${i.expiresInDays}d)`).join("\n");
+      body += "\n\nAT-RISK ITEMS (<=3 days)\n" + risk.map(i => `- ${i.canonicalName} (${daysLeft(i)}d)`).join("\n");
     }
     body += "\n\n— Parsly";
 
@@ -449,7 +449,7 @@ function renderInventory() {
   updateDashboard(null, null);
 
   state.inventory.forEach((item) => {
-    const days = item.expiresInDays;
+    const days = daysLeft(item);
     let riskBarClass, expiryBadgeClass;
     if (days <= 3) {
       riskBarClass = "risk-bar-high";
@@ -661,9 +661,16 @@ function renderRouting(decisions, summary) {
     body.appendChild(reason);
 
     if (suggest) {
-      const rec = document.createElement("p");
-      rec.className = "font-body text-xs text-on-surface-variant mt-1";
-      rec.textContent = `Suggestion: ${suggest}`;
+      const rec = document.createElement("div");
+      rec.className = "mt-2 bg-surface-container-low rounded-xl px-3 py-2 flex items-center gap-2";
+      const locIcon = document.createElement("span");
+      locIcon.className = "material-symbols-outlined text-[16px] text-primary shrink-0";
+      locIcon.textContent = d.route === "donate" ? "volunteer_activism" : "compost";
+      const locText = document.createElement("span");
+      locText.className = "font-body text-xs text-on-surface";
+      locText.textContent = suggest;
+      rec.appendChild(locIcon);
+      rec.appendChild(locText);
       body.appendChild(rec);
     }
 
@@ -674,7 +681,7 @@ function renderRouting(decisions, summary) {
 }
 
 function updateDashboard(decisions, summary) {
-  const atRisk = state.inventory.filter((i) => i.expiresInDays <= 3).length;
+  const atRisk = state.inventory.filter((i) => daysLeft(i) <= 3).length;
   setStatCard(els.statItemsAtRisk, atRisk);
   setStatCard(els.statMealsGenerated, state.recipesGenerated);
   if (decisions && summary) {
@@ -691,6 +698,13 @@ function setStatCard(cardEl, value) {
 
 function renderFailureBadge(count) {
   els.failureCountBadge.textContent = `${count} Failures`;
+}
+
+function getApiKey() {
+  const fromInput = els.openrouterKey.value.trim();
+  const fromState = state.settings.openrouterKey;
+  const key = fromInput || fromState;
+  return key && key.startsWith("sk-") ? key : "";
 }
 
 function setStatus(msg) {

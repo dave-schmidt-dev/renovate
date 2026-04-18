@@ -1,4 +1,5 @@
 import { COMPOST_LOCATIONS, DONATION_LOCATIONS } from "./demoData.js";
+import { daysLeft } from "./receipt.js";
 
 export function normalizeRouteDecisions(routeDecisions, inventory) {
   const byItem = new Map(routeDecisions.map((d) => [d.item.toLowerCase(), d]));
@@ -6,13 +7,17 @@ export function normalizeRouteDecisions(routeDecisions, inventory) {
     const known = byItem.get(item.canonicalName.toLowerCase());
     if (known) return known;
 
-    if (item.expiresInDays <= 2) {
-      return { item: item.canonicalName, route: "donate", reason: "Urgent but not in selected recipes." };
+    const days = daysLeft(item);
+    if (days <= 0) {
+      return { item: item.canonicalName, route: "compost", reason: "Expired — compost if possible, otherwise discard." };
     }
-    if (item.expiresInDays <= 6) {
-      return { item: item.canonicalName, route: "compost", reason: "Moderate urgency and not selected." };
+    if (days <= 2) {
+      return { item: item.canonicalName, route: "donate", reason: "Expiring very soon — donate to a local food pantry if you can't eat it today." };
     }
-    return { item: item.canonicalName, route: "eat", reason: "Still within useful shelf window." };
+    if (days <= 5) {
+      return { item: item.canonicalName, route: "eat", reason: `Use soon — ${days} days left. Prioritize in meals this week.` };
+    }
+    return { item: item.canonicalName, route: "eat", reason: `Good for ${days} more days. No rush.` };
   });
 }
 
@@ -24,8 +29,19 @@ export function summarizeRoutes(decisions) {
   return summary;
 }
 
+let donateIdx = 0;
+let compostIdx = 0;
+
 export function attachRouteSuggestions(route) {
-  if (route === "donate") return DONATION_LOCATIONS[0];
-  if (route === "compost") return COMPOST_LOCATIONS[0];
+  if (route === "donate") {
+    const loc = DONATION_LOCATIONS[donateIdx % DONATION_LOCATIONS.length];
+    donateIdx++;
+    return loc;
+  }
+  if (route === "compost") {
+    const loc = COMPOST_LOCATIONS[compostIdx % COMPOST_LOCATIONS.length];
+    compostIdx++;
+    return loc;
+  }
   return "";
 }

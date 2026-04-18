@@ -253,8 +253,16 @@ export function toInventoryItems(reviewedItems) {
       rawLabel: item.rawLabel,
       quantity: Number(item.estimatedQuantity || 1),
       unit: "unit",
-      expiresInDays,
+      shelfLifeDays: expiresInDays,
+      expiresAt: new Date(now + expiresInDays * 86400000).toISOString(),
+      importedAt: new Date(now).toISOString(),
       confidence: Number(item.confidenceScore || 0),
     };
   });
+}
+
+export function daysLeft(item) {
+  if (!item.expiresAt) return item.expiresInDays ?? item.shelfLifeDays ?? 14;
+  const ms = new Date(item.expiresAt).getTime() - Date.now();
+  return Math.max(0, Math.ceil(ms / 86400000));
 }
