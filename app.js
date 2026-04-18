@@ -580,6 +580,26 @@ function buildInventoryCard(item, riskBarClass, expiryBadgeClass) {
 
 function renderRecipes(recipes, provider) {
   clearElement(els.recipesList);
+
+  // Show which items are driving recipe prioritization
+  const urgent = state.inventory
+    .map((i) => ({ name: i.canonicalName, days: daysLeft(i) }))
+    .filter((i) => i.days <= 5)
+    .sort((a, b) => a.days - b.days);
+  if (urgent.length) {
+    const banner = document.createElement("div");
+    banner.className = "bg-error-container rounded-2xl px-4 py-3 mb-4 flex items-start gap-2";
+    const bannerIcon = document.createElement("span");
+    bannerIcon.className = "material-symbols-outlined text-[18px] text-on-error-container mt-0.5 shrink-0";
+    bannerIcon.textContent = "priority_high";
+    const bannerText = document.createElement("p");
+    bannerText.className = "font-body text-sm text-on-error-container";
+    bannerText.textContent = `Using ${urgent.map((i) => `${toTitleCase(i.name)} (${i.days}d)`).join(", ")} first — these expire soon.`;
+    banner.appendChild(bannerIcon);
+    banner.appendChild(bannerText);
+    els.recipesList.appendChild(banner);
+  }
+
   const providerNote = document.createElement("p");
   providerNote.className = "font-label text-xs text-on-surface-variant mb-3";
   providerNote.textContent = `Provider: ${provider}`;
