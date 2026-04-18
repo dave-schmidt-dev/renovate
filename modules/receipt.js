@@ -119,6 +119,16 @@ const DEFAULT_EXPIRY = {
   // Beverages
   juice: 7,
   soda: 180,
+  "dr pepper": 180,
+  "mountain dew": 180,
+  "coca cola": 180,
+  "coca-cola": 180,
+  pepsi: 180,
+  sprite: 180,
+  gatorade: 180,
+  "energy drink": 180,
+  water: 365,
+  "sparkling water": 365,
   coffee: 90,
   tea: 365,
   // Deli / prepared
@@ -167,7 +177,7 @@ const CATEGORY_KEYWORDS = [
   { pattern: /berry|berries|strawberry|blueberry|raspberry/i, days: 3 },
   { pattern: /lettuce|spinach|kale|arugula|greens|herb|cilantro|parsley|basil/i, days: 3 },
   { pattern: /banana|avocado|peach|plum|nectarine|mango/i, days: 4 },
-  { pattern: /tomato|pepper|cucumber|zucchini|squash|mushroom/i, days: 5 },
+  { pattern: /tomato|\bpepper\b|cucumber|zucchini|squash|mushroom/i, days: 5 },
   { pattern: /apple|pear|orange|lemon|lime|grapefruit|citrus/i, days: 14 },
   { pattern: /carrot|potato|onion|garlic|beet|turnip|radish|celery/i, days: 14 },
 ];
