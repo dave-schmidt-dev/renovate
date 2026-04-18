@@ -1,0 +1,227 @@
+/* === M3 Color Tokens === */
+:root {
+  --primary: #3d653e;
+  --primary-container: #557e55;
+  --on-primary: #ffffff;
+  --on-primary-container: #f7fff1;
+  --secondary: #566342;
+  --secondary-container: #d7e5bb;
+  --on-secondary: #ffffff;
+  --on-secondary-container: #5a6745;
+  --tertiary: #7a5500;
+  --tertiary-container: #996c00;
+  --tertiary-fixed: #ffdea9;
+  --on-tertiary-fixed: #271900;
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --on-error: #ffffff;
+  --on-error-container: #93000a;
+  --surface: #f8f9fa;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f3f4f5;
+  --surface-container: #edeeef;
+  --surface-container-high: #e7e8e9;
+  --surface-container-highest: #e1e3e4;
+  --on-surface: #191c1d;
+  --on-surface-variant: #424940;
+  --outline: #72796f;
+  --outline-variant: #c2c9bd;
+  --primary-fixed: #c1eebc;
+  --primary-fixed-dim: #a5d2a2;
+  --secondary-fixed: #dae8be;
+  --secondary-fixed-dim: #becca3;
+  --surface-tint: #406840;
+}
+
+/* === Base Reset === */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0 0 0.5rem;
+}
+
+/* === Cards === */
+.card {
+  background: var(--surface-container-lowest);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+}
+
+/* === Buttons === */
+button {
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  width: auto;
+}
+
+button.secondary {
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+/* === Pills === */
+.pill {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pill.danger {
+  background: var(--error-container);
+  color: var(--on-error-container);
+}
+
+.pill.warn {
+  background: var(--tertiary-fixed);
+  color: var(--on-tertiary-fixed);
+}
+
+.pill.success {
+  background: var(--primary-fixed);
+  color: var(--primary);
+}
+
+/* === Material Symbols === */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* === Layout === */
+.side-nav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 16rem;
+  height: 100vh;
+  background: var(--surface-container-low);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
+.main-content {
+  margin-left: 16rem;
+  padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .side-nav {
+    display: none;
+  }
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+/* === Risk Bars === */
+.risk-bar-high,
+.risk-bar-medium,
+.risk-bar-low {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+.risk-bar-high   { background: var(--error); }
+.risk-bar-medium { background: var(--secondary-fixed); }
+.risk-bar-low    { background: var(--primary-fixed); }
+
+/* === Toggle Switch === */
+.toggle-switch { position: relative; width: 2.5rem; height: 1.5rem; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-switch .slider { position: absolute; inset: 0; background: var(--surface-container-highest); border-radius: 9999px; transition: background 0.2s; cursor: pointer; }
+.toggle-switch .slider::before { content: ''; position: absolute; left: 0.25rem; top: 0.25rem; width: 1rem; height: 1rem; background: var(--surface-container-lowest); border-radius: 50%; transition: transform 0.2s; }
+.toggle-switch input:checked + .slider { background: var(--primary); }
+.toggle-switch input:checked + .slider::before { transform: translateX(1rem); }
+
+/* === Scrollbar === */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: var(--outline-variant); border-radius: 9999px; }
+
+/* === Status Message === */
+.status-msg { padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; background: var(--surface-container-low); color: var(--on-surface-variant); margin-top: 0.5rem; }
+
+/* === Form Elements === */
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  font: inherit;
+}
+
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+/* === Table === */
+.table-wrap { overflow: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+th, td {
+  border-bottom: 1px solid var(--outline-variant);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+th {
+  color: var(--on-surface-variant);
+  font-weight: 600;
+}
